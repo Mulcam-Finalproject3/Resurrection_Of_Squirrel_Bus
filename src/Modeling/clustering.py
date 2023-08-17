@@ -244,12 +244,9 @@ def get_clustering_folium(df, X_col, Y_col, label_column=None):
         7: '#000080',    # navy
         8: '#00FF00',    # lime
         9: '#A9A9A9',    # darkgray
-        10: '#A52A2A',
-        11: '#FFFF00',
-        12: '#D3D3D3', #Light Gray: 
-    # Dark Gray: #A9A9A9
-    # Brown: #A52A2A
-    # Yellow: #FFFF00
+        10: '#A52A2A',   # Brown
+        11: '#FFFF00',   # Yellow
+        12: '#D3D3D3',   #Light Gray: 
     }
 
 
