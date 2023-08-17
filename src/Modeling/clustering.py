@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 from scipy.spatial.distance import cdist
 from dataclasses import dataclass
 import numpy as np
-from eda_module import *
+# from visualization import *
 from sklearn.decomposition import PCA
 from sklearn.metrics import calinski_harabasz_score
 from sklearn.cluster import KMeans
