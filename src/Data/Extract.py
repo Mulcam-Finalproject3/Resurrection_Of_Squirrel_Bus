@@ -112,3 +112,36 @@ def busstation_XY_dong(Bus_Location_df,list):
         num+=1
         print(f'{num}번째')  # 확인용
     return Bus_Location_df
+
+
+
+
+# kakao api에서 버스 정류장 별 infra 추출-> dataframe 반환
+def kakao_infra(key, category_code_list):
+    bus_station_XY = pd.read_csv('../data/bus_station_XY_final.csv')
+    url = "https://dapi.kakao.com/v2/local/search/category.json"
+    kakao_key = key
+
+    # 유치원, 마트, 식당, 학교, 대학, 지하철, 투어, 카페, 병원, 
+    # 문화시설, 대학병원, 공공기관, 
+
+
+    for cat in category_code_list:
+        bus_station_XY[cat]=''
+
+        for i in range(len(bus_station_XY[:10])):
+            params = {'category_group_code': cat,
+                        'x': bus_station_XY.loc[i,'X좌표'],
+                        'y': bus_station_XY.loc[i,'Y좌표'],
+                        'page': 7,
+                        'radius':500
+                    }
+            header = {'Authorization': f'KakaoAK {kakao_key}'}
+            bus = requests.get(url=url,
+                            params= params,
+                            headers = header).json()
+            print(bus)
+            lst = []
+            bus_station_XY.loc[i, cat] = bus['meta']['total_count']
+
+    return bus_station_XY
