@@ -16,13 +16,18 @@ from sklearn.metrics import silhouette_samples, silhouette_score
 import folium
 import matplotlib.cm as cm
 import math 
+import glob
 
 
 plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
 warnings.filterwarnings('ignore')
 
-df_infra = pd.read_csv('../data/final_tb_infra_population.csv')
-df_bus_info = pd.read_csv('../data/bus_route_info.csv')
+
+# 특정 경로 내의 모든 CSV 파일 가져오기
+df_infra = pd.read_csv(glob.glob('../src/Data/csv/final_tb_infra_population.csv')[0])
+df_bus_info = pd.read_csv(glob.glob('../src/Data/csv/bus_route_info.csv')[0])
+tb_infra_population = pd.read_csv(glob.glob('../src/Data/csv/tb_infra_population.csv')[0])
+
 
 # 불러온 csv의 type 전처리
 df_bus_info['ROUTE_ID'] = df_bus_info['ROUTE_ID'].astype('str')
