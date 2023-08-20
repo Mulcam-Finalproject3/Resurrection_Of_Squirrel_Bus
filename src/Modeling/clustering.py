@@ -1,4 +1,3 @@
-
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -8,10 +7,11 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 from scipy.spatial.distance import cdist
 from dataclasses import dataclass
 import numpy as np
-# from visualization import *
+# from eda_module import *
 from sklearn.decomposition import PCA
 from sklearn.metrics import calinski_harabasz_score
 from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
 from sklearn.metrics import silhouette_samples, silhouette_score
 import folium
 import matplotlib.cm as cm
@@ -21,8 +21,8 @@ import math
 plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
 warnings.filterwarnings('ignore')
 
-df_infra = pd.read_csv('./data/final_tb_infra_population.csv')
-df_bus_info = pd.read_csv('./data/bus_route_info.csv')
+df_infra = pd.read_csv('../data/final_tb_infra_population.csv')
+df_bus_info = pd.read_csv('../data/bus_route_info.csv')
 
 # 불러온 csv의 type 전처리
 df_bus_info['ROUTE_ID'] = df_bus_info['ROUTE_ID'].astype('str')
@@ -37,12 +37,13 @@ df_infra['X좌표'] = df_infra['X좌표'].astype('str')
 df_infra['Y좌표'] = df_infra['Y좌표'].astype('str')
 df_infra['법정동코드'] = df_infra['법정동코드'].astype('str')
 
+daram_bus_list = ['8771', '8761', '8552', '8441', '8551', '8221', '8331']
+start_station = ['111000128','113000113','120000156','120000109','105000127','122000305','123000209']
+end_station =   ['111000291','118000048','119000024','120000018','105000072','122000302','123000043']
+
 
 def get_daram_95station_df():
-    
-    daram_bus_list = ['8771', '8761', '8552', '8441', '8551', '8221', '8331']
     df_daram = df_bus_info[df_bus_info['노선명'].isin(daram_bus_list)]  
-
     df_merged = pd.merge(df_daram, df_infra,left_on ='NODE_ID', right_on = 'NODE_ID', how = 'left'  )
 
     return df_merged
@@ -52,15 +53,11 @@ def get_daram_14_station_df():
 
     # 다람쥐 버스 데이터 분할 
     # 시작점과 끝점 데이터만 
-    start_station = ['111000128','113000113','120000156','120000109','105000127','122000305','123000209']
-    end_station =   ['111000291','118000048','119000024','120000018','105000072','122000302','123000043']
-
     st_end_station= start_station + end_station
 
     df_daram_final = df_daram[df_daram['NODE_ID'].isin(st_end_station)]
 
     return df_daram_final
-
 
 
 # 서울 전체 버스정류장 중에서 다람쥐버스 정류장이 아닌 것들만 추출
@@ -123,14 +120,19 @@ def scaler(df,scaler):
 
 
 # PCA 설명력 
-def pca_explained_variance_ration(df,min_n,max_n) :
-    for num in range(min_n, max_n):
-
-        pca = PCA(n_components=num)
-        pca_transformed = pca.fit_transform(df)
-
-        print(num,'차원 분산 설명력 : ',sum(pca.explained_variance_ratio_))
-
+def pca_explained_variance_ration(df) :
+    pca = PCA(n_components=df.shape[1])
+    pca_transformed = pca.fit_transform(df)
+    pca_colum = ['pca_'+ str(i+1)for i in range(pca.n_components_)]
+    df_pca = pd.DataFrame(data = pca_transformed,
+                        columns = pca_colum)
+        
+    df_pca_result = pd.DataFrame({'설명가능한 분산 비율(고윳값)': pca.explained_variance_,
+                                '기여율': pca.explained_variance_ratio_},
+                                index = pca_colum)
+    df_pca_result['누적 기여율'] = df_pca_result['기여율'].cumsum()
+    
+    return df_pca_result
 
 # PCA
 def func_pca(df, n_comp):
@@ -138,8 +140,9 @@ def func_pca(df, n_comp):
     pca_transformed = pca.fit_transform(df)
     
     pca_lst = []
-    word = 'pca_'
+    
     for i in range(1, n_comp+1):
+        word = 'pca_'
         word += str(i)
         pca_lst.append(word)
 
@@ -220,10 +223,44 @@ def calinski_harabasz(min_cluster, max_cluster, df):
 def clustering_kmeans(df, cluster_num, init, max_iter, random_state):
     kmeans = KMeans(n_clusters=cluster_num, init=init, max_iter=max_iter, random_state=random_state)
     y_pred = kmeans.fit_predict(df)
-    df['kmeans_label'] = y_pred
+    new_df = df.copy()
+    new_df['kmeans_label'] = y_pred
 
-    return df
+    return new_df
 
+
+# GMM
+def bic_aic(df,min_components, max_components):
+    gms_per_k = [GaussianMixture(n_components=k, n_init=20, random_state=42).fit(df)
+                for k in range(min_components, max_components)]
+    # atrribute_error가 뜨면 범위를 1을 제외하고 입력할 것
+
+    bics = [model.bic(df) for model in gms_per_k]
+    aics = [model.aic(df) for model in gms_per_k]
+
+    plt.figure(figsize = (8,3))
+    plt.plot(range(min_components,max_components),bics, "bo-", label="BIC")
+    plt.plot(range(min_components,max_components),aics, "go-", label="AIC")
+    plt.xlabel("$k$", fontsize=14)
+    plt.ylabel("information Criterion", fontsize=14)
+    plt.axis([2, 20.5, np.min(aics)-50, np.max(aics)+50])
+
+    plt.legend()
+
+    # 그림 저장
+    # save_fit("aic_bic_vs_k_plot")
+    plt.show()
+
+
+
+def clustering_gmm(df, cluster_num, random_state):
+    gmm = GaussianMixture(n_components= cluster_num, random_state=random_state).fit(df)
+    y_pred = gmm.predict(df)
+
+    new_df = df.copy()
+    new_df['gmm_label'] = y_pred
+
+    return new_df
 
 
 def get_clustering_folium(df, X_col, Y_col, label_column=None):
@@ -244,9 +281,12 @@ def get_clustering_folium(df, X_col, Y_col, label_column=None):
         7: '#000080',    # navy
         8: '#00FF00',    # lime
         9: '#A9A9A9',    # darkgray
-        10: '#A52A2A',   # Brown
-        11: '#FFFF00',   # Yellow
-        12: '#D3D3D3',   #Light Gray: 
+        10: '#A52A2A',
+        11: '#FFFF00',
+        12: '#D3D3D3', #Light Gray: 
+    # Dark Gray: #A9A9A9
+    # Brown: #A52A2A
+    # Yellow: #FFFF00
     }
 
 
