@@ -1,4 +1,3 @@
-
 import requests
 import json
 import pandas as pd
@@ -24,7 +23,6 @@ import pandas as pd
 # PM9	약국
 
 # category_lst=  ['MT1','CS2','PS3','SC4','AC5','SW8','BK9','CT1','PO3','AT4','CE7','HP8']
-
 
 def kakao_infra(key, category_code_list):
     bus_station_XY = pd.read_csv('../data/bus_station_XY_final.csv')
