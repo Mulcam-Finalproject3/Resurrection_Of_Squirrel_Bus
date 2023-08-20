@@ -5,8 +5,15 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import warnings
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
-    
-plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
+import sys
+import glob
+import pandas as pd
+
+# 특정 경로 내의 모든 CSV 파일 가져오기
+final_tb_infra_population = pd.read_csv(glob.glob('../src/Data/csv/final_tb_infra_population.csv')[0])
+bus_route_info = pd.read_csv(glob.glob('../src/Data/csv/bus_route_info.csv')[0])
+tb_infra_population = pd.read_csv(glob.glob('../src/Data/csv/tb_infra_population.csv')[0])
+
 warnings.filterwarnings('ignore')
 
 
@@ -55,8 +62,8 @@ def scaler(df,scaler):
 
 # 다람쥐 버스 95개의 인프라 df
 def get_daram_95station_df():
-    df_infra = pd.read_csv('./data/final_tb_infra_population.csv')
-    df_bus_info = pd.read_csv('./data/bus_route_info.csv')
+    df_infra = final_tb_infra_population
+    df_bus_info = bus_route_info
 
     # 불러온 csv의 type 전처리
     df_bus_info['ROUTE_ID'] = df_bus_info['ROUTE_ID'].astype('str')
@@ -127,7 +134,7 @@ def get_scaled_daram_df():
 
 
 def get_barplot_start_end(df):
-
+    plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
     daram_bus_list = ['8771', '8761', '8552', '8441', '8551', '8221', '8331']
 
     for bus in daram_bus_list:
@@ -159,14 +166,14 @@ def get_barplot_start_end(df):
 
 # 상관관계 heatmap
 def get_heatmap_data():
-    df_corr = pd.read_csv('./data/tb_infra_population.csv')
+    df_corr = tb_infra_population
     df_check = df_corr[['academy_cnt','bank_cnt', 'kindergarten_cnt', 'mart_cnt', 'restaurant_cnt',
                                 'school_cnt', 'university_cnt', 'subway_cnt', 'tour_cnt', 'cafe_cnt',
                                 'hospital_cnt', 'culture_cnt', 'univ_hospital_cnt', 'public_office_cnt',
                                 'tot_family', 'tot_ppltn', 'corp_cnt', 'employee_cnt',
                                 'population_code_15to64', 'household_cnt_family', 'household_cnt_alone']]
     
-    df_final = pd.read_csv('./data/final_tb_infra_population.csv')
+    df_final = final_tb_infra_population
     
     df_check2 = df_final[['academy_cnt',
        'kindergarten_cnt', 'mart_cnt', 'restaurant_cnt', 'school_cnt',
@@ -177,6 +184,7 @@ def get_heatmap_data():
     return df_check, df_check2
 
 def get_heatmap(data):
+    plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
     sns.set(rc={'figure.figsize':(15,15)})
     sns.heatmap(data.corr(),annot = True,linewidths=.5, annot_kws = {'size':10})
 
@@ -188,8 +196,8 @@ def get_heatmap(data):
 
 
 def get_barplot_daram_vs_all():
+    plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
     df_daram = get_daram_95station_df()
-    final_tb_infra_population = pd.read_csv('./data/final_tb_infra_population.csv')
 
     final_tb_infra_population['NODE_ID'] = final_tb_infra_population['NODE_ID'].astype('str')
     final_tb_infra_population['X좌표'] = final_tb_infra_population['X좌표'].astype('str')
