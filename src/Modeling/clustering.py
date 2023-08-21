@@ -17,51 +17,49 @@ import folium
 import matplotlib.cm as cm
 import math 
 import glob
-
-
 plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
 warnings.filterwarnings('ignore')
 
-
-# 특정 경로 내의 모든 CSV 파일 가져오기
+# csv 불러오기
 df_infra = pd.read_csv(glob.glob('../src/Data/csv/final_tb_infra_population.csv')[0])
 df_bus_info = pd.read_csv(glob.glob('../src/Data/csv/bus_route_info.csv')[0])
 tb_infra_population = pd.read_csv(glob.glob('../src/Data/csv/tb_infra_population.csv')[0])
 
-
-# 불러온 csv의 type 전처리
-df_bus_info['ROUTE_ID'] = df_bus_info['ROUTE_ID'].astype('str')
-df_bus_info['순번'] = df_bus_info['순번'].astype('str')
-df_bus_info['NODE_ID'] = df_bus_info['NODE_ID'].astype('str')
-df_bus_info['ARS_ID'] = df_bus_info['ARS_ID'].astype('str')
-df_bus_info['X좌표'] = df_bus_info['X좌표'].astype('str')
-df_bus_info['Y좌표'] = df_bus_info['Y좌표'].astype('str')
-    
-df_infra['NODE_ID'] = df_infra['NODE_ID'].astype('str')
-df_infra['X좌표'] = df_infra['X좌표'].astype('str')
-df_infra['Y좌표'] = df_infra['Y좌표'].astype('str')
-df_infra['법정동코드'] = df_infra['법정동코드'].astype('str')
-
+# 다람쥐 버스 리스트, 기+종점 리스트
 daram_bus_list = ['8771', '8761', '8552', '8441', '8551', '8221', '8331']
 start_station = ['111000128','113000113','120000156','120000109','105000127','122000305','123000209']
 end_station =   ['111000291','118000048','119000024','120000018','105000072','122000302','123000043']
+st_end_station= start_station + end_station
+
+# 데이터 형식 변환 함수
+def preprocessing_cluster(df):
+    num_col = ['academy_cnt', 'kindergarten_cnt', 'mart_cnt', 'restaurant_cnt',
+              'school_cnt', 'university_cnt', 'subway_cnt', 'tour_cnt', 'cafe_cnt',
+              'hospital_cnt', 'culture_cnt', 'univ_hospital_cnt', 'public_office_cnt',
+              'employee_cnt', 'alone_ratio', 'emp_corp_ratio', 'population_15to64']
+
+    str_col_A = [i for i in df.columns if i not in num_col]
+    df[str_col_A] = df[str_col_A].astype('str')
+
+    if 'RIDE_SUM_6_10' in df.columns and 'ALIGHT_SUM_6_10' in df.columns:
+        df = df.drop(['RIDE_SUM_6_10', 'ALIGHT_SUM_6_10'], axis=1)
+    
+    return df
+
+df_bus_info = preprocessing_cluster(df_bus_info)
+df_infra = preprocessing_cluster(df_infra)
 
 
 def get_daram_95station_df():
     df_daram = df_bus_info[df_bus_info['노선명'].isin(daram_bus_list)]  
     df_merged = pd.merge(df_daram, df_infra,left_on ='NODE_ID', right_on = 'NODE_ID', how = 'left'  )
-
     return df_merged
 
 def get_daram_14_station_df():
     df_daram = get_daram_95station_df()
 
-    # 다람쥐 버스 데이터 분할 
-    # 시작점과 끝점 데이터만 
-    st_end_station= start_station + end_station
-
+    # 기+종점 데이터만 
     df_daram_final = df_daram[df_daram['NODE_ID'].isin(st_end_station)]
-
     return df_daram_final
 
 
@@ -69,7 +67,6 @@ def get_daram_14_station_df():
 def get_not_daram_station():
     daram_list = get_daram_95station_df()['NODE_ID'].tolist()
     df_not_daram = df_infra[~df_infra['NODE_ID'].isin(daram_list)]
-
     return df_not_daram
     
 
@@ -225,6 +222,7 @@ def calinski_harabasz(min_cluster, max_cluster, df):
         print('calinski-score',num,'개 군집:', calinski_harabasz_score(df, km.labels_))
 
 
+# KMeans
 def clustering_kmeans(df, cluster_num, init, max_iter, random_state):
     kmeans = KMeans(n_clusters=cluster_num, init=init, max_iter=max_iter, random_state=random_state)
     y_pred = kmeans.fit_predict(df)
@@ -294,8 +292,6 @@ def get_clustering_folium(df, X_col, Y_col, label_column=None):
     # Yellow: #FFFF00
     }
 
-
-     
     if label_column != None:
         folium_data = df[[X_col, Y_col, label_column]]
         for index, rows in folium_data.iterrows():
@@ -323,3 +319,46 @@ def get_clustering_folium(df, X_col, Y_col, label_column=None):
             ).add_to(seoul_map)
 
     return seoul_map
+
+
+
+# def main_kmeans():
+#     # 특정 경로 내의 모든 CSV 파일 가져오기
+    
+#     df_daram_14 = get_daram_14_station_df()
+#     df_bus_not_daram = get_not_daram_station()
+
+#     # numerical data만 추출
+#     df_daram_14_num = df_daram_14.select_dtypes(include=['int','float'])
+#     df_bus_not_daram_num = df_bus_not_daram.select_dtypes(include=['int','float'])
+
+#     df_similar = get_cosine_similarity(df_daram_14_num, df_bus_not_daram_num, 100)
+#     get_clustering_folium(df_similar, 'X좌표','Y좌표')
+    
+
+#     # kmeans
+#     df_similar_num = df_similar.select_dtypes(include=['int', 'float'])
+#     df_similar_num = df_similar_num.reset_index(drop=True)
+
+#     df_scaled = scaler(df_similar_num, 'standard')
+
+#     # visualize
+#     elbow_method(2, 15, df_scaled)
+#     visualize_silhouette([3,4,5,6,7,8,9,10,11,12,13,14,15],df_scaled)
+#     calinski_harabasz(2,15, df_scaled)
+
+#     cluster_num = 8
+#     init_method = 'k-means++'
+#     max_iter = 300
+#     random_state = 0
+
+#     df_kmeans = clustering_kmeans(df_scaled, cluster_num, init_method, max_iter, random_state)
+#     kmeans_labels = df_kmeans['kmeans_label']
+
+#     df_final = df_similar.copy()
+#     df_final['kmeans_label'] = kmeans_labels.values
+
+#     df_final
+
+# if __name__ == '__main__':
+#     main()
