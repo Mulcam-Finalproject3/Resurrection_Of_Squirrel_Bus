@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import xmltodict
 import os
+import glob
 
 # 버스 데이터 수집
 
@@ -160,7 +161,7 @@ def busstation_XY_dong(Bus_Location_df, list):
 
 # kakao api에서 버스 정류장 별 infra 추출-> dataframe 반환
 def kakao_infra(key, category_code_list):
-    bus_station_XY = pd.read_csv("../data/bus_station_XY_final.csv")
+    bus_station_XY = pd.read_csv(glob.glob('../src/Data/csv/bus_station_XY_final.csv')[0])
     url = "https://dapi.kakao.com/v2/local/search/category.json"
     kakao_key = key
 
