@@ -161,7 +161,7 @@ def busstation_XY_dong(Bus_Location_df, list):
 
 # kakao api에서 버스 정류장 별 infra 추출-> dataframe 반환
 def kakao_infra(key, category_code_list):
-    bus_station_XY = pd.read_csv(glob.glob('../src/Data/csv/bus_station_XY_final.csv')[0])
+    bus_station_XY = pd.read_csv(glob.glob('./csv/bus_station_XY_final.csv')[0])
     url = "https://dapi.kakao.com/v2/local/search/category.json"
     kakao_key = key
 
@@ -171,7 +171,7 @@ def kakao_infra(key, category_code_list):
     for cat in category_code_list:
         bus_station_XY[cat] = ""
 
-        for i in range(len(bus_station_XY[:10])):
+        for i in range(len(bus_station_XY)):
             params = {
                 "category_group_code": cat,
                 "x": bus_station_XY.loc[i, "X좌표"],
@@ -181,9 +181,36 @@ def kakao_infra(key, category_code_list):
             }
             header = {"Authorization": f"KakaoAK {kakao_key}"}
             bus = requests.get(url=url, params=params, headers=header).json()
-            print(bus)
+            print(cat, i)
             lst = []
             bus_station_XY.loc[i, cat] = bus["meta"]["total_count"]
+    
+    col_rename = {'AC5': 'academy_cnt',
+                    'PS3': 'kindergarten_cnt',
+                    'MT1': 'mart_cnt',
+                    'FD6':'restaurant_cnt',
+                    'SC4': 'school_cnt',
+                    'SW8': 'subway_cnt',
+                    'AT4': 'tour_cnt',
+                    'CE7' :'cafe_cnt',
+                    'HP8': 'hospital_cnt',
+                    'CT1': 'culture_cnt',
+                    'PO3': 'public_office_cnt',
+                    'CS2': 'convenience_cnt',
+                    'PK6':'park_cnt',
+                    'OL7':'gas_cnt',
+                    'BK9':'bank_cnt',
+                    'AG2':'estate_agent_cnt',
+                    'AD5':'accommodation_cnt',
+                    }
+
+
+    for old_name, new_name in col_rename.items():
+        if old_name in bus_station_XY.columns:
+            bus_station_XY.rename(columns={old_name: new_name}, inplace=True)
+
+
+    bus_station_XY.rename(columns=col_rename, inplace=True)
 
     return bus_station_XY
 
