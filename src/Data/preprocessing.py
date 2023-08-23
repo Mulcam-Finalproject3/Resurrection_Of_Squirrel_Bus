@@ -64,26 +64,29 @@ def preprocessing_infra():
     df = df.drop('dong_name',axis=1)
     
 
-    # 승/하차 데이터 붙이기
-    total_bus_time = pd.read_csv('./csv/total_bus_time.csv')
+    # # 승/하차 데이터 붙이기
+    # total_bus_time = pd.read_csv('./csv/total_bus_time.csv')
 
-    ## 승하차 수와 관련된 col 제외하고 모두 str로 형식 변경
-    str_col = ['USE_MON','월별_노선_정류장_ID','ROUTE_ID','NODE_ID']
-    total_bus_time[str_col] = total_bus_time[str_col].astype('str')
+    # ## 승하차 수와 관련된 col 제외하고 모두 str로 형식 변경
+    # str_col = ['USE_MON','월별_노선_정류장_ID','ROUTE_ID','NODE_ID']
+    # total_bus_time[str_col] = total_bus_time[str_col].astype('str')
 
-    ## 2021~2022까지로 데이터 filtering
-    total_bus_time  = total_bus_time[(total_bus_time['USE_MON']>='202101')&(total_bus_time['USE_MON']<='202212')]
+    # ## 2021~2022까지로 데이터 filtering
+    # total_bus_time  = total_bus_time[(total_bus_time['USE_MON']>='202101')&(total_bus_time['USE_MON']<='202212')]
 
-    ##  먼저 6~10시까지 각 승차, 하차 수 합계 구함 
-    total_bus_time['RIDE_SUM_6_10'] = total_bus_time['SIX_RIDE_NUM']+total_bus_time['SEVEN_RIDE_NUM']+total_bus_time['EIGHT_RIDE_NUM']+total_bus_time['NINE_RIDE_NUM']
-    total_bus_time['ALIGHT_SUM_6_10'] = total_bus_time['SIX_ALIGHT_NUM']+total_bus_time['SEVEN_ALIGHT_NUM']+total_bus_time['EIGHT_ALIGHT_NUM']+total_bus_time['NINE_ALIGHT_NUM']
+    # ##  먼저 6~10시까지 각 승차, 하차 수 합계 구함 
+    # total_bus_time['RIDE_SUM_6_10'] = total_bus_time['SIX_RIDE_NUM']+total_bus_time['SEVEN_RIDE_NUM']+total_bus_time['EIGHT_RIDE_NUM']+total_bus_time['NINE_RIDE_NUM']
+    # total_bus_time['ALIGHT_SUM_6_10'] = total_bus_time['SIX_ALIGHT_NUM']+total_bus_time['SEVEN_ALIGHT_NUM']+total_bus_time['EIGHT_ALIGHT_NUM']+total_bus_time['NINE_ALIGHT_NUM']
 
-    ## 각 정류장(NODE) 별로 gropuby 함
-    total_groupby = total_bus_time.groupby('NODE_ID').sum()
-    total_ride_alight = total_groupby[['RIDE_SUM_6_10','ALIGHT_SUM_6_10']]
+    # ## 각 정류장(NODE) 별로 gropuby 함
+    # total_groupby = total_bus_time.groupby('NODE_ID').sum()
+    # total_ride_alight = total_groupby[['RIDE_SUM_6_10','ALIGHT_SUM_6_10']]
 
+    # total_bus_time csv용량이 너무 커서 집계 후 df인 total_ride_alight.csv로 대체
+    total_ride_alight = pd.read_csv('./csv/total_ride_alight.csv')
+    total_ride_alight['NODE_ID'] = total_ride_alight['NODE_ID'].astype('str') 
     # 인프라 + 승/하차 merge
-    df_final = pd.merge(df, total_ride_alight, left_on = 'NODE_ID', right_on = total_ride_alight.index, how= 'left')
+    df_final = pd.merge(df, total_ride_alight, left_on = 'NODE_ID', right_on = 'NODE_ID', how= 'left')
     ride_mean = df_final['RIDE_SUM_6_10'].mean()
     alight_mean = df_final['ALIGHT_SUM_6_10'].mean()
 
