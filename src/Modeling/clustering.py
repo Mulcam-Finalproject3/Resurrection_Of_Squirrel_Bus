@@ -6,8 +6,6 @@ import warnings
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 from scipy.spatial.distance import cdist
 from dataclasses import dataclass
-import numpy as np
-# from eda_module import *
 from sklearn.decomposition import PCA
 from sklearn.metrics import calinski_harabasz_score
 from sklearn.cluster import KMeans
@@ -17,13 +15,32 @@ import folium
 import matplotlib.cm as cm
 import math 
 import glob
+import os
+import sys
 plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
 warnings.filterwarnings('ignore')
 
-# csv 불러오기
-df_infra = pd.read_csv(glob.glob('../src/Data/csv/final_tb_infra_population.csv')[0])
-df_bus_info = pd.read_csv(glob.glob('../src/Data/csv/bus_route_info.csv')[0])
-tb_infra_population = pd.read_csv(glob.glob('../src/Data/csv/tb_infra_population.csv')[0])
+current_path = os.path.dirname(os.path.abspath(__file__))
+path_split = os.path.split(current_path)
+
+while path_split[1] != 'src':
+    current_path = os.path.dirname(current_path)
+
+csv_path = os.path.join(current_path, 'Data','csv')
+sys.path.append(current_path)
+
+from Data.preprocessing import *
+
+# # csv 불러오기
+# df_infra = pd.read_csv(glob.glob('../src/Data/csv/final_tb_infra_population.csv')[0])
+# df_bus_info = pd.read_csv(glob.glob('../src/Data/csv/bus_route_info.csv')[0])
+# tb_infra_population = pd.read_csv(glob.glob('../src/Data/csv/tb_infra_population.csv')[0])
+
+df_infra = get_final_infra_df()
+df_bus_info = pd.read_csv(rf'{csv_path}\bus_route_info.csv')
+tb_infra_population = pd.read_csv(rf'{csv_path}\tb_infra_population.csv')
+
+
 
 # 다람쥐 버스 리스트, 기+종점 리스트
 daram_bus_list = ['8771', '8761', '8552', '8441', '8551', '8221', '8331']
