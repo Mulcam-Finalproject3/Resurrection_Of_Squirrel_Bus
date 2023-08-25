@@ -8,8 +8,8 @@ path = './Data/csv'
 def get_parquet_data(file_path):
     import pandas as pd
 
-    ride_df = pd.read_parquet(f"{file_path}/ride_df/")
-    alight_df = pd.read_parquet(f"{file_path}/alight_df/")
+    ride_df = pd.read_parquet(f"{file_path}/ride_df_agg/")
+    alight_df = pd.read_parquet(f"{file_path}/alight_df_agg/")
 
     ride_df['lon'] = ride_df['lon'].astype('double')
     ride_df['lat'] = ride_df['lat'].astype('double')
@@ -21,11 +21,6 @@ def get_parquet_data(file_path):
     alight_df = alight_df.drop(["NODE_ID"], axis = 1)
 
     return ride_df, alight_df
-
-# from sklearn.base import BaseEstimator, TransformerMixin
-
-# class regression_estimator(BaseEstimator, TransformerMixin):
-#     pass
 
 def log_transformation(dataframe, target_data):
     import numpy as np
@@ -57,7 +52,7 @@ def split_data(dataframe, target_data):
     
     X_train, X_test, y_train, y_test = train_test_split(
         dataframe,
-        dataframe[target_data],
+        target_data,
         test_size=0.2,
         random_state=42
     )
@@ -80,14 +75,6 @@ def randomforest_grid_search(X_train, y_train):
     grid_rf = GridSearchCV(rf_model, param_grid=grid_parameters, scoring='neg_mean_squared_error', cv=5, refit=True)
     grid_rf.fit(X_train, y_train)
 
-    rf_score = pd.DataFrame(grid_rf.cv_results_)
-    df_rf_score = rf_score[['params','mean_test_score','rank_test_score',
-            'split0_test_score','split1_test_score','split2_test_score','split3_test_score','split4_test_score']]
-
-    print(df_rf_score)
-    print('GridSearchCV 최적 파라미터 :', grid_rf.best_params_)
-    print('GridSearchCV 최적 파라미터의 평균 MSE :{:.3f}'.format(grid_rf.best_score_))
-
     best_model = grid_rf.best_estimator_
 
     return best_model
@@ -107,19 +94,37 @@ def XGB_grid_search(X_train, y_train):
     grid_xgb = GridSearchCV(
         XGBRegressor(n_estimators = 100, subsample = 0.5),
         param_grid = parameters,
-        return_train_score = True, # 훈련 세트에 대한 평가 점수도 같이 받게 해주는 옵션
-        n_jobs = -1, # 사용 가능한 CPU 코어를 모두 사용해서 훈련에 투입
-        cv = 3 # 각 하이퍼 파라미터 조합으로 만드는 모델에서 사용할 폴드의 개수
-        # parameters의 경우의 수 6 x 폴드의 개수 3 = 총 18개의 모델 생성
-    )
+        return_train_score = True,
+        n_jobs = -1,
+        cv = 3
+        )
 
     grid_xgb.fit(X_train, y_train)
 
-    print("GridSearchCV의 최적 하이퍼 파라미터 : {}".format(grid_xgb.best_params_))
-    print("GridSearchCV의 최고 정확도 : {: .4f}".format(grid_xgb.best_score_))
-    
     best_model = grid_xgb.best_estimator_
+
     return best_model
+
+def model_eval(best_model, X_train, X_test, y_train, y_test):
+    from sklearn.metrics import mean_squared_error,r2_score
+
+    best_model.fit(X_train, y_train)
+
+    y_pred_train = best_model.predict(X_train)
+    mse_train = mean_squared_error(y_train, y_pred_train)
+    r2_train = r2_score(y_train, y_pred_train)
+
+    y_pred_test = best_model.predict(X_test)
+    mse_test = mean_squared_error(y_test, y_pred_test)
+    r2_test = r2_score(y_test, y_pred_test)
+
+    train_rmse = np.sqrt(abs(mse_train))
+    test_rmse = np.sqrt(abs(mse_test))
+
+    print(f"{best_model} RMSE (train) : ", train_rmse)
+    print(f"{best_model} R2 (train) : ", r2_train)
+    print(f"{best_model} RMSE (test) : ", test_rmse)
+    print(f"{best_model} R2 (test) : ", r2_test)
 
 def save_model(best_model):
     import joblib
