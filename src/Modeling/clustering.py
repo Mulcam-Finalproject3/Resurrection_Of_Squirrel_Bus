@@ -29,14 +29,9 @@ sys.path.append(current_path)
 
 from Data.preprocessing import *
 
-# # csv 불러오기
-# df_infra = pd.read_csv(glob.glob('../src/Data/csv/final_tb_infra_population.csv')[0])
-# df_bus_info = pd.read_csv(glob.glob('../src/Data/csv/bus_route_info.csv')[0])
-# tb_infra_population = pd.read_csv(glob.glob('../src/Data/csv/tb_infra_population.csv')[0])
-
 df_infra = get_final_infra_df()
-df_bus_info = pd.read_csv(rf'{csv_path}\bus_route_info.csv')
-tb_infra_population = pd.read_csv(rf'{csv_path}\tb_infra_population.csv')
+df_bus_info = pd.read_csv(rf'{csv_path}/bus_route_info.csv')
+tb_infra_population = pd.read_csv(rf'{csv_path}/tb_infra_population.csv')
 
 
 
