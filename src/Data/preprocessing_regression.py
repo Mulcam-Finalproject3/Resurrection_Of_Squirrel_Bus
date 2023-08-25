@@ -1,58 +1,65 @@
 import pandas as pd
 
+# def spark_dataframe_preprocessing():
 import pyspark
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import to_date, col, isnan, when, count, hour, to_timestamp, dayofweek
 from datetime import datetime
 
-spark = SparkSession.builder.master("local").appName("MyApp")\
-    .config("spark.executor.memory", "16g").config("spark.executor.cores", "4")\
-    .getOrCreate()
 
 path = './Data/csv'
 
-# 최종 선정 노선
-ky_df = spark.read.option("encoding", "UTF-8").csv(f'{path}/가양.csv', inferSchema=True, header=True)
-ky_list = ky_df.collect()
-ky_node_list = [row["NODE_ID"] for row in ky_list]
+def spark_data_preprocessing():
+    spark = SparkSession.builder.master("local").appName("MyApp")\
+        .config("spark.executor.memory", "16g").config("spark.executor.cores", "4")\
+        .getOrCreate()
 
-# 시간대 별 승하차 데이터
-bus_06_07_df = spark.read.csv(f'{path}/AAA_06_07.csv', inferSchema=True, header=True)
-bus_07_08_df = spark.read.csv(f'{path}/AAA_07_08.csv', inferSchema=True, header=True)
-bus_08_09_df = spark.read.csv(f'{path}/AAA_08_09.csv', inferSchema=True, header=True)
-bus_09_10_df = spark.read.csv(f'{path}/AAA_09_10.csv', inferSchema=True, header=True)
+    # 최종 선정 노선
+    ky_df = spark.read.option("encoding", "UTF-8").csv(f'{path}/가양.csv', inferSchema=True, header=True)
+    ky_list = ky_df.collect()
 
-bus_06_07_df = bus_06_07_df.withColumnRenamed("ride_06_07", "RIDE").withColumnRenamed("alight_06_07", "ALIGHT").withColumn("Hour", hour("USE_DT"))
-bus_07_08_df = bus_07_08_df.withColumnRenamed("ride_07_08", "RIDE").withColumnRenamed("alight_07_08", "ALIGHT").withColumn("Hour", hour("USE_DT"))
-bus_08_09_df = bus_08_09_df.withColumnRenamed("ride_08_09", "RIDE").withColumnRenamed("alight_08_09", "ALIGHT").withColumn("Hour", hour("USE_DT"))
-bus_09_10_df = bus_09_10_df.withColumnRenamed("ride_09_10", "RIDE").withColumnRenamed("alight_09_10", "ALIGHT").withColumn("Hour", hour("USE_DT"))
+    ky_node_list = [row["NODE_ID"] for row in ky_list]
 
-bus_06_07_df.createOrReplaceTempView('bus_06_07_df')
-bus_07_08_df.createOrReplaceTempView('bus_07_08_df')
-bus_08_09_df.createOrReplaceTempView('bus_08_09_df')
-bus_09_10_df.createOrReplaceTempView('bus_09_10_df')
+    # 시간대 별 승하차 데이터
+    bus_06_07_df = spark.read.csv(f'{path}/AAA_06_07.csv', inferSchema=True, header=True)
+    bus_07_08_df = spark.read.csv(f'{path}/AAA_07_08.csv', inferSchema=True, header=True)
+    bus_08_09_df = spark.read.csv(f'{path}/AAA_08_09.csv', inferSchema=True, header=True)
+    bus_09_10_df = spark.read.csv(f'{path}/AAA_09_10.csv', inferSchema=True, header=True)
 
-union_query = """
-SELECT *
-FROM bus_06_07_df
-UNION ALL
-SELECT *
-FROM bus_07_08_df
-UNION ALL
-SELECT *
-FROM bus_08_09_df
-UNION ALL
-SELECT *
-FROM bus_09_10_df
-"""
-merged_df = spark.sql(union_query)
+    bus_06_07_df = bus_06_07_df.withColumnRenamed("ride_06_07", "RIDE").withColumnRenamed("alight_06_07", "ALIGHT").withColumn("Hour", hour("USE_DT"))
+    bus_07_08_df = bus_07_08_df.withColumnRenamed("ride_07_08", "RIDE").withColumnRenamed("alight_07_08", "ALIGHT").withColumn("Hour", hour("USE_DT"))
+    bus_08_09_df = bus_08_09_df.withColumnRenamed("ride_08_09", "RIDE").withColumnRenamed("alight_08_09", "ALIGHT").withColumn("Hour", hour("USE_DT"))
+    bus_09_10_df = bus_09_10_df.withColumnRenamed("ride_09_10", "RIDE").withColumnRenamed("alight_09_10", "ALIGHT").withColumn("Hour", hour("USE_DT"))
+
+    bus_06_07_df.createOrReplaceTempView('bus_06_07_df')
+    bus_07_08_df.createOrReplaceTempView('bus_07_08_df')
+    bus_08_09_df.createOrReplaceTempView('bus_08_09_df')
+    bus_09_10_df.createOrReplaceTempView('bus_09_10_df')
+
+    union_query = """
+    SELECT *
+    FROM bus_06_07_df
+    UNION ALL
+    SELECT *
+    FROM bus_07_08_df
+    UNION ALL
+    SELECT *
+    FROM bus_08_09_df
+    UNION ALL
+    SELECT *
+    FROM bus_09_10_df
+    """
+    merged_df = spark.sql(union_query)
+    
+    spark.stop()
+
+    return ky_node_list
 
 def get_holiday():
 
     import requests
     from datetime import datetime
-
 
     years = [2020, 2021]
     SERVICE_KEY = "n8NfLiNxxjBIMps28fLbd259sMTpTGn%2BMHumLN0llqi8EMYDYnwhZQU4yoIEymUZ%2FP4qbe34kP3yPcEbzZUlRw%3D%3D"
@@ -88,8 +95,8 @@ def delete_weekend_and_holiday(dataframe):
     
     return dataframe
 
-def get_final_route_list(dataframe):
-    dataframe = dataframe.filter(col("STND_BSST_ID").isin(ky_node_list))
+def get_final_route_list(dataframe, final_node_list):
+    dataframe = dataframe.filter(col("STND_BSST_ID").isin(final_node_list))
 
 def rename_and_drop_columns(dataframe, final_route_dataframe):
     drop_columns = ["_c0", "Unnamed: 0", "USE_DT", "BUS_ROUTE_ID", "BUS_ROUTE_NO","BUS_ROUTE_NM", "BUS_STA_NM", "NODE_ID", "date", "week", "dayofweek", "풍향(deg)", "습도(%)"]
@@ -130,5 +137,3 @@ def load_data(file_name):
     dataframe = pd.read_parquet(f"{path}/{file_name}/")
 
     return dataframe
-
-spark.stop()
