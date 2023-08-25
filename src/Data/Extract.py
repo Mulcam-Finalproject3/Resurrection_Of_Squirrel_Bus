@@ -325,3 +325,50 @@ def weather_api():
     transformer_test = WeatherTransformer().fit_transform(items["item"])
 
     return transformer_test
+def get_sgis_accessToken():
+    """_summary_
+    SGIS 인증 토큰 가져오는 코드
+
+    Returns:
+        _type_: _description_
+    """
+  SGIS_API = "https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json?consumer_key={}&consumer_secret={}"
+  C_KEY = "5a856ac23eac44689cb4" # 서비스 ID
+  C_SECRET = "3f8798ac490345dca660" # 보안
+  response = requests.get(REAL_TIME_API.format(C_KEY, C_SECRET))
+  response.status_code
+  data = response.json()
+  token = data['result']['accessToken'] # 인증 토큰
+
+  return token
+
+
+def get_population_data():
+    """_summary_
+    인구, 가구수 데이터 뽑기
+
+    Returns:
+        _type_: _description_
+    """
+    
+    POPULATION_TOTAL_API = 'https://sgisapi.kostat.go.kr/OpenAPI3/stats/population.json'
+    POPULATION_15to64_API = "https://sgisapi.kostat.go.kr/OpenAPI3/stats/searchpopulation.json"
+    token = getAccessToken()
+
+    total_population_api_url = f"{API}?accessToken={token}&year=2020&adm_cd=11&low_search=2"
+    population_15to64_api_url = f"{POPULATION_15to64_API}?accessToken={token}&year=2020&adm_cd=11&low_search=2&age_type=23"
+    
+    response = requests.get(api_url)
+    population_data = response.json()
+    population_data_json = json_normalize(population_data['result'])
+
+    df_population_result = pd.DataFrame(population_data_json)
+    df_population_result = df_population_result.rename(columns={"population": f"population_code_15to64"}).drop(axis = 1, columns = ["adm_nm", "avg_age"])
+
+    df_population_result = pd.DataFrame(population_data_json)
+    df_population_result = df_population_result.loc[:, ['adm_cd', 'adm_nm', 'tot_family', 'tot_ppltn', 'corp_cnt', 'employee_cnt']]
+    
+    df_total_population = pd.merge(df_total_population, df_population_age, how='left', on=['adm_cd'])
+    df_total_population
+
+    return df_population_result
