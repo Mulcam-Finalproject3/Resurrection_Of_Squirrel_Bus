@@ -26,7 +26,8 @@ def get_population_data_by_bubjeong():
 
 
     # 인구 테이블(통계청)
-    df_pop = pd.read_csv(rf'{csv_path}/population_house_corp.csv')
+    df_pop = pd.read_csv(os.path.join(csv_path, 'population_house_corp.csv'))
+    # df_pop = pd.read_csv(rf'{csv_path}/population_house_corp.csv')
     str_col = ['adm_cd','adm_nm']
     df_pop[str_col] = df_pop[str_col].astype('str')
     df_pop = df_pop.drop_duplicates(subset=['adm_cd'])
@@ -93,8 +94,8 @@ def preprocessing_infra():
     # total_ride_alight = total_groupby[['RIDE_SUM_6_10','ALIGHT_SUM_6_10']]
 
     # total_bus_time csv용량이 너무 커서 집계 후 df인 total_ride_alight.csv로 대체
-    
-    total_ride_alight = pd.read_csv(rf'{csv_path}/total_ride_alight.csv')
+    total_ride_alight = pd.read_csv(os.path.join(csv_path, 'total_ride_alight.csv'))
+    # total_ride_alight = pd.read_csv(rf'{csv_path}/total_ride_alight.csv')
     total_ride_alight['NODE_ID'] = total_ride_alight['NODE_ID'].astype('str') 
     # 인프라 + 승/하차 merge
     df_final = pd.merge(df, total_ride_alight, left_on = 'NODE_ID', right_on = 'NODE_ID', how= 'left')
