@@ -1,20 +1,27 @@
 
+import sys
+import os
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import warnings
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
-import sys
 import glob
-import pandas as pd
-
-# 특정 경로 내의 모든 CSV 파일 가져오기
-final_tb_infra_population = pd.read_csv(glob.glob('../src/Data/csv/final_tb_infra_population.csv')[0])
-bus_route_info = pd.read_csv(glob.glob('../src/Data/csv/bus_route_info.csv')[0])
-tb_infra_population = pd.read_csv(glob.glob('../src/Data/csv/tb_infra_population.csv')[0])
-
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+from git import Repo
 warnings.filterwarnings('ignore')
+
+current_path = os.path.abspath(__file__)
+while os.path.split(current_path)[1] != 'src': 
+    current_path = os.path.dirname(current_path)
+csv_path = os.path.join(current_path, 'Data\csv')
+
+sys.path.append(current_path)
+
+from Data.preprocessing import *
+bus_route_info = pd.read_csv(rf'{csv_path}\bus_route_info.csv')
+tb_infra_population = pd.read_csv(rf'{csv_path}\tb_infra_population.csv')
+final_tb_infra_population = get_final_infra_df()
 
 
 
@@ -229,8 +236,6 @@ def get_barplot_daram_vs_all():
         ax.legend(['다람쥐 버스','전체 버스'],fontsize=16)
         ax.set_title('다람쥐 버스 vs 전체 버스_'+df[1])
         plt.show() 
-
-
 
 
         ax = df_employee_cnt.plot.bar(rot=0,figsize=(15, 8))  
