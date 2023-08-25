@@ -26,7 +26,7 @@ def get_population_data_by_bubjeong():
 
 
     # 인구 테이블(통계청)
-    df_pop = pd.read_csv(rf'{csv_path}\population_house_corp.csv')
+    df_pop = pd.read_csv(rf'{csv_path}/population_house_corp.csv')
     str_col = ['adm_cd','adm_nm']
     df_pop[str_col] = df_pop[str_col].astype('str')
     df_pop = df_pop.drop_duplicates(subset=['adm_cd'])
@@ -52,7 +52,7 @@ def get_population_data_by_bubjeong():
 def preprocessing_infra():
     # 인프라 테이블 완성하기
     '''Extract.py에서 kakao_infra함수를 통해 뽑은 df를 넣으면 됨'''   
-    df = pd.read_csv(rf'{csv_path}\df_kakao_infra.csv')
+    df = pd.read_csv(rf'{csv_path}/df_kakao_infra.csv')
     str_col = ['NODE_ID', 'ARS_ID', '정류소명', 'X좌표', 'Y좌표', '법정동코드', '법정동_구', '법정동',
        '행정동코드', '행정동']
 
@@ -94,7 +94,7 @@ def preprocessing_infra():
 
     # total_bus_time csv용량이 너무 커서 집계 후 df인 total_ride_alight.csv로 대체
     
-    total_ride_alight = pd.read_csv(rf'{csv_path}\total_ride_alight.csv')
+    total_ride_alight = pd.read_csv(rf'{csv_path}/total_ride_alight.csv')
     total_ride_alight['NODE_ID'] = total_ride_alight['NODE_ID'].astype('str') 
     # 인프라 + 승/하차 merge
     df_final = pd.merge(df, total_ride_alight, left_on = 'NODE_ID', right_on = 'NODE_ID', how= 'left')
