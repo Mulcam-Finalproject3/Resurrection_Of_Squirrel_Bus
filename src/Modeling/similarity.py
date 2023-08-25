@@ -1,24 +1,107 @@
-# 코사인 유사도를 바탕으로 유사한 데이터 뽑기
-def get_cosine_similarity(df_A, df_B, data_num):
-    '''df_A: dataframe which is a criteria for calculating cosine similarity'''
+#유사도
 
-    # 코사인 유사도 
-    def cosine_similarity_matrix(X, Y): # X, Y는 array
-        cosine_sim = 1-cdist(X,Y, metric='cosine') # 코사인 유사도 행렬
-        return cosine_sim
+    # 유클라디안 유사도
 
+def euclidean_similar_data(df_A, df_B, num_similar):
+    from scipy.spatial.distance import cdist
+    import numpy as np
+    distances = cdist(df_A.values, df_B.values, metric='euclidean')
+    sorted_indices = np.argsort(distances)
+    similar_indices = sorted_indices[:, :num_similar]
+    similar_data = df_B.iloc[similar_indices.flatten()]
+    return similar_data
+
+    # 코사인 유사도
+
+
+def cosine_similarity_matrix(X, Y):
+    from scipy.spatial.distance import cdist
+    import numpy as np
+    # 코사인 유사도 행렬 계산하기
+    cosine_sim = 1 - cdist(X, Y, metric='cosine')
+    return cosine_sim
+
+def cosine_similar_data(df_A, df_B, num_similar):
+    import numpy as np
+    # df_A와 df_B의 데이터를 배열로 변환
     X = df_A.values
     Y = df_B.values
 
-    cos_matrix = cosine_similarity_matrix(X,Y)
-    sorted_cos_matrix = np.argsort(cos_matrix, axis=1)[:,::-1]
+    # 코사인 유사도 행렬 계산
+    similarity_matrix = cosine_similarity_matrix(X, Y)
 
-    # array 형태
-    top_similar_cos = sorted_cos_matrix[:,:data_num]
+    # 유사도 행렬에서 유사한 인덱스 추출하기
+    sorted_indices = np.argsort(similarity_matrix, axis=1)[:, ::-1]
+    similar_indices = sorted_indices[:, :num_similar]
 
-    # array형태로 나온 유사한 데이터들을 flatten화 하여 1차원으로 변경
-
-    df_bus_not_daram = get_not_daram_station()
-    similar_data = df_bus_not_daram.iloc[top_similar_cos.flatten()]
+    # 유사한 데이터 추출
+    similar_data = df_B.iloc[similar_indices.flatten()]
 
     return similar_data
+
+# PCA 2차원 축소
+
+def visualize_similar_data(title,similar_data):  # title은 string으로 기입하기 
+    from sklearn.decomposition import PCA
+    import matplotlib.pyplot as plt
+    pca = PCA(n_components=2)
+    reduced_data = pca.fit_transform(similar_data.values)
+
+    plt.scatter(reduced_data[:, 0], reduced_data[:, 1])
+    plt.xlabel('PC1')
+    plt.ylabel('PC2')
+    plt.title(title)
+    plt.show()
+
+# Folium으로 지도에 표시하는 함수 
+import folium
+
+def visualize_similar_data_on_map(html_name,similar_data,daram_df):
+    # 서울 중심 좌표
+    seoul_center = [37.5665, 126.9780]
+    
+    # Folium 지도 객체 생성
+    map_seoul = folium.Map(location=seoul_center, zoom_start=12)
+
+    # 유사한 데이터 위치 표시
+    for _, row in similar_data.iterrows():
+        latitude = row['Y좌표']  
+        longitude = row['X좌표']  
+        folium.CircleMarker(
+            location=[latitude, longitude],
+            radius=3,
+            color='blue',
+            fill=True,
+            fill_color='blue',
+            fill_opaticy=0.6,
+            popup=folium.Popup(row['정류소명'], max_width=300),
+        ).add_to(map_seoul)
+    
+    # 기존 다람쥐 버스 노선 표시 
+    for _, row in daram_df.iterrows():
+        latitude = row['Y좌표']  
+        longitude = row['X좌표']  
+        folium.CircleMarker(
+            location=[latitude, longitude],
+            radius=3,
+            color='red',
+            fill=True,
+            fill_color='red',
+            fill_opaticy=0.6,
+            popup=folium.Popup(row['정류소명'], max_width=300),
+        ).add_to(map_seoul)
+        
+ 
+
+    # Folium 지도 출력
+    map_seoul.save(html_name)  # 결과를 HTML 파일로 저장
+
+def visualize_similar_not_PCA(title,similar_data):  # title은 string으로 기입하기 
+    import numpy as np
+    import matplotlib as plt
+    similar_data_np = np.array(similar_data)
+    plt.scatter(similar_data_np[:, 0], similar_data_np[:, 1])
+    plt.xlabel('RIDE')
+    plt.ylabel('ALIGHT')
+    plt.title(title)
+    plt.show()
