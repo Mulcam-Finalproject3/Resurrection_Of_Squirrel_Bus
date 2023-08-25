@@ -20,13 +20,11 @@ import sys
 plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
 warnings.filterwarnings('ignore')
 
-current_path = os.path.dirname(os.path.abspath(__file__))
-path_split = os.path.split(current_path)
-
-while path_split[1] != 'src':
+current_path = os.path.abspath(__file__)
+while os.path.split(current_path)[1] != 'src': 
     current_path = os.path.dirname(current_path)
-
 csv_path = os.path.join(current_path, 'Data','csv')
+
 sys.path.append(current_path)
 
 from Data.preprocessing import *
