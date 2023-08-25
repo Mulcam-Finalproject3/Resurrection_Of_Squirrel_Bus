@@ -53,7 +53,8 @@ def get_population_data_by_bubjeong():
 def preprocessing_infra():
     # 인프라 테이블 완성하기
     '''Extract.py에서 kakao_infra함수를 통해 뽑은 df를 넣으면 됨'''   
-    df = pd.read_csv(rf'{csv_path}/df_kakao_infra.csv')
+    df = pd.read_csv(os.path.join(csv_path, 'df_kakao_infra.csv'))
+    # df = pd.read_csv(rf'{csv_path}/df_kakao_infra.csv')
     str_col = ['NODE_ID', 'ARS_ID', '정류소명', 'X좌표', 'Y좌표', '법정동코드', '법정동_구', '법정동',
        '행정동코드', '행정동']
 
