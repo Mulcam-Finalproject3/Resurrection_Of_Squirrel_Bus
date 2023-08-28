@@ -115,7 +115,7 @@ def get_scaled_daram_df():
 
    # barplot을 위한 최종 dataframe
     plot_col = [ 'academy_cnt', 'kindergarten_cnt', 'mart_cnt', 'restaurant_cnt',
-                    'school_cnt', 'university_cnt', 'tour_cnt', 'cafe_cnt',
+                    'school_cnt', 'university_cnt','subway_cnt', 'tour_cnt', 'cafe_cnt',
                     'hospital_cnt', 'culture_cnt', 'univ_hospital_cnt', 'public_office_cnt',
                     'employee_cnt', 'alone_ratio', 'emp_corp_ratio', 'population_15to64']
     df_daram_barplot = df_daram_final[plot_col]
@@ -129,7 +129,7 @@ def get_scaled_daram_df():
     df_daram_scaled['순번'] = 순번
 
     df_daram_scaled.columns = ['academy', 'kindergarten', 'mart', 'restaurant',
-       'school', 'university', 'tour', 'cafe', 'hospital',
+       'school', 'university', 'subway','tour', 'cafe', 'hospital',
        'culture', 'univ_hospital', 'public_office', 'employee',
        'alone_ratio', 'emp_corp_ratio', 'population_15to64', '노선명','순번']
     
@@ -149,7 +149,7 @@ def get_barplot_start_end(df):
         df_end = df[df.index == bus].iloc[1, :-1]
 
         # Create a figure with two subplots side by side (1 row, 2 columns)
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 6))
 
         # Plot the first bar chart on the first subplot (left)
         sns.barplot(x=df_start.index, y=df_start.values, ax=ax1, label='infra_count')
