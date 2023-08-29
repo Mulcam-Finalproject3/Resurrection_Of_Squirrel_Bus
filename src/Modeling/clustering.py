@@ -28,13 +28,11 @@ csv_path = os.path.join(current_path, 'Data','csv')
 sys.path.append(current_path)
 
 from Data.preprocessing import *
+from EDA.visualization import *
 
 df_infra = get_final_infra_df()
 df_bus_info = pd.read_csv(os.path.join(csv_path, 'bus_route_info.csv'))
 tb_infra_population = pd.read_csv(os.path.join(csv_path, 'tb_infra_population.csv'))
-# df_bus_info = pd.read_csv(rf'{csv_path}/bus_route_info.csv')
-# tb_infra_population = pd.read_csv(rf'{csv_path}/tb_infra_population.csv')
-
 
 
 # 다람쥐 버스 리스트, 기+종점 리스트
@@ -43,7 +41,7 @@ start_station = ['111000128','113000113','120000156','120000109','105000127','12
 end_station =   ['111000291','118000048','119000024','120000018','105000072','122000302','123000043']
 st_end_station= start_station + end_station
 
-# 데이터 형식 변환 함수
+# 군집에 맞게 데이터 형식 변환 함수
 def preprocessing_cluster(df):
     num_col = ['academy_cnt', 'kindergarten_cnt', 'mart_cnt', 'restaurant_cnt',
               'school_cnt', 'university_cnt', 'subway_cnt', 'tour_cnt', 'cafe_cnt',
@@ -60,19 +58,6 @@ def preprocessing_cluster(df):
 
 df_bus_info = preprocessing_cluster(df_bus_info)
 df_infra = preprocessing_cluster(df_infra)
-
-
-def get_daram_95station_df():
-    df_daram = df_bus_info[df_bus_info['노선명'].isin(daram_bus_list)]  
-    df_merged = pd.merge(df_daram, df_infra,left_on ='NODE_ID', right_on = 'NODE_ID', how = 'left'  )
-    return df_merged
-
-def get_daram_14_station_df():
-    df_daram = get_daram_95station_df()
-
-    # 기+종점 데이터만 
-    df_daram_final = df_daram[df_daram['NODE_ID'].isin(st_end_station)]
-    return df_daram_final
 
 
 # 서울 전체 버스정류장 중에서 다람쥐버스 정류장이 아닌 것들만 추출
@@ -107,29 +92,29 @@ def get_cosine_similarity(df_A, df_B, data_num):
 
     return similar_data
 
-# scaler
-def scaler(df,scaler):
-    """_summary_
+# # scaler
+# def scaler(df,scaler):
+#     """_summary_
 
-    Args:
-        df (dataframe): insert pandas dataframe.
-        scaler (_type_): choose scaler among standard, minmax and robust.
+#     Args:
+#         df (dataframe): insert pandas dataframe.
+#         scaler (_type_): choose scaler among standard, minmax and robust.
 
-    Returns:
-        _type_: dataframe
-    """
-    if scaler == 'standard':
-        scaled_data = StandardScaler().fit_transform(df)
-        df_scaled = pd.DataFrame(scaled_data, columns = df.columns)
-    elif scaler == 'minmax':
-        scaled_data = MinMaxScaler().fit_transform(df)
-        df_scaled = pd.DataFrame(scaled_data, columns = df.columns)
-    elif scaler == 'robust':
-        scaled_data = RobustScaler().fit_transform(df)
-        df_scaled = pd.DataFrame(scaled_data, columns = df.columns)
-    else:
-        print('올바른 scaler를 입력해주세요.')
-    return df_scaled
+#     Returns:
+#         _type_: dataframe
+#     """
+#     if scaler == 'standard':
+#         scaled_data = StandardScaler().fit_transform(df)
+#         df_scaled = pd.DataFrame(scaled_data, columns = df.columns)
+#     elif scaler == 'minmax':
+#         scaled_data = MinMaxScaler().fit_transform(df)
+#         df_scaled = pd.DataFrame(scaled_data, columns = df.columns)
+#     elif scaler == 'robust':
+#         scaled_data = RobustScaler().fit_transform(df)
+#         df_scaled = pd.DataFrame(scaled_data, columns = df.columns)
+#     else:
+#         print('올바른 scaler를 입력해주세요.')
+#     return df_scaled
 
 
 
@@ -286,13 +271,13 @@ def get_clustering_folium(df, X_col, Y_col, label_column=None):
     seoul_map = folium.Map(location=seoul_center, zoom_start=12)
 
     label_colors = {
-        0: '#FFC0CB',   # pink
+        0: '#00BFFF',   # skyblue
         1: '#0000FF',   # blue
         2: '#008000',   # green
         3: '#FFA500',   # orange
         4: '#800080',   # purple
         5: '#FF0000',   # red
-        6: '#008080',   # skyblue
+        6: '#008080',   # teal
         7: '#000080',    # navy
         8: '#00FF00',    # lime
         9: '#A9A9A9',    # darkgray
