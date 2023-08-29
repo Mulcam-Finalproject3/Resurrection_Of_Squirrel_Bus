@@ -88,7 +88,11 @@ def get_daram_95station_df():
     daram_bus_list = ['8771', '8761', '8552', '8441', '8551', '8221', '8331']
     df_daram = df_bus_info[df_bus_info['노선명'].isin(daram_bus_list)]  
 
-    df_merged = pd.merge(df_daram, df_infra,left_on ='NODE_ID', right_on = 'NODE_ID', how = 'left'  )
+    df_merged = pd.merge(df_daram, df_infra, left_on = ['NODE_ID'],right_on=['NODE_ID'] ,how = 'left')
+
+    drop_col = ['정류소명_y', 'X좌표_y', 'Y좌표_y']
+    df_merged = df_merged.drop(drop_col, axis=1)
+    df_merged.rename(columns = {'정류소명_x':'정류소명','X좌표_x':'X좌표','Y좌표_x':'Y좌표'},inplace=True)
 
     return df_merged
 

@@ -78,32 +78,41 @@ def get_not_daram_station():
     daram_list = get_daram_95station_df()['NODE_ID'].tolist()
     df_not_daram = df_infra[~df_infra['NODE_ID'].isin(daram_list)]
     return df_not_daram
-    
+
+def cosine_similarity_matrix(X, Y):
+    # 코사인 유사도 행렬 계산
+    cosine_sim = 1 - cdist(X, Y, metric='cosine')
+    return cosine_sim   
+
 
 # 코사인 유사도를 바탕으로 유사한 데이터 뽑기
-def get_cosine_similarity(df_A, df_B, data_num):
+def get_cosine_similarity(df_A, df_B, num_similar):
     '''df_A: dataframe which is a criteria for calculating cosine similarity'''
 
-    # 코사인 유사도 
-    def cosine_similarity_matrix(X, Y): # X, Y는 array
-        cosine_sim = 1-cdist(X,Y, metric='cosine') # 코사인 유사도 행렬
-        return cosine_sim
-
     X = df_A.values
-    Y = df_B.values
+    Y = df_B.values 
+    
+    # 코사인 유사도 행렬 계산
+    similarity_matrix = cosine_similarity_matrix(X, Y)
 
-    cos_matrix = cosine_similarity_matrix(X,Y)
-    sorted_cos_matrix = np.argsort(cos_matrix, axis=1)[:,::-1]
 
-    # array 형태
-    top_similar_cos = sorted_cos_matrix[:,:data_num]
+    # 유사도 행렬에서 유사한 인덱스 추출
+    sorted_indices = np.argsort(similarity_matrix, axis=1)[:, ::-1]
 
-    # array형태로 나온 유사한 데이터들을 flatten화 하여 1차원으로 변경
+    similar_indices = sorted_indices[:, :num_similar]
 
-    df_bus_not_daram = get_not_daram_station()
-    similar_data = df_bus_not_daram.iloc[top_similar_cos.flatten()]
 
-    return similar_data
+    df_total = pd.DataFrame()
+
+    for num in range(len(similar_indices)):
+        index_lst = similar_indices[num].tolist()
+        
+        similar_bus_station = get_not_daram_station().reset_index().iloc[index_lst]
+        similar_bus_station['station_label'] = num
+        df_total = pd.concat([df_total, similar_bus_station],axis=0)
+
+
+    return df_total
 
 # scaler
 def scaler(df,scaler):
