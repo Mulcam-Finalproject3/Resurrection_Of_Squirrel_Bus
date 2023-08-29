@@ -149,3 +149,66 @@ def get_weather_data(file_path, file_name):
                         (pred_weather_df['Hour'] == 900), 'Hour'] = pred_weather_df['Hour'] // 100
     
     return pred_weather_df
+
+import pandas as pd
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.ensemble import RandomForestRegressor
+
+class RegressionPreprocessor(BaseEstimator, TransformerMixin):
+    def __init__(self, target, rename_cols = None):
+        self.target = target
+        self.rename_cols = rename_cols
+        self.drop_cols = ['VEC', 'REH', 'X', 'Y', 'Date']
+        self.scaled_cols = ["lon", "lat", "tmp", "wsd", "pcp"]
+        self.encoded_cols = ['Hour']
+
+        self.scaler = StandardScaler()
+        self.encoder = OneHotEncoder()  
+    def fit(self):
+
+        return self
+
+    def fit_transform(self, dataframe):
+        # 로그 변환 적용
+        dataframe[self.target] = np.log1p(dataframe[self.target])
+        # 컬럼명 변경
+        if self.rename_cols:
+            dataframe = dataframe.rename(columns=self.rename_cols)
+        
+        if (dataframe['Hour'] == 600 | ['Hour'] == 700 | ['Hour'] == 800 | ['Hour'] == 900):
+            dataframe.loc[(dataframe['Hour'] == 600) | 
+                          (dataframe['Hour'] == 700) | 
+                          (dataframe['Hour'] == 800) | 
+                          (dataframe['Hour'] == 900), 'Hour'] = dataframe['Hour'] // 100
+    
+        ohe_df = pd.get_dummies(dataframe['Hour'], columns=['Hour'])
+
+        standard_df = dataframe[self.scaled_cols]
+        standard_df = pd.DataFrame(self.scaler.fit_transform(standard_df), 
+                                   columns=standard_df.columns)
+
+        concat_df = pd.concat([standard_df, ohe_df], axis = 1)
+
+        return concat_df
+      
+
+# class RandomForestRegressionPipeline():
+#     def __init__(self):
+
+#     self.steps = [
+#         ('scaler', self.scaler),
+#         ('encoder', self.encoder),
+#         ('log_transform', self.target)
+#         ('rf_model', RandomForestRegressor(self.best_model.get_params()))
+#     ]
+
+#     # 파이프라인 객체 생성
+#     self.pipeline = Pipeline(self.steps)
+
+#     def fit():
+#         pass
+
+#     def predict():
+#         pass

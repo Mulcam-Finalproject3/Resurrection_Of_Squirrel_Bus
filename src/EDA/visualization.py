@@ -36,9 +36,13 @@ def df_preprocess(df):
 
 def get_subway_barplot(df, x_col=None, y_col=None, orderby_col=None):
     df = df.sort_values(by=orderby_col, ascending=False)
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(8, 6))
     sns.barplot(y=y_col, x=x_col, data=df[:30])
-    plt.title(orderby_col)
+    plt.title(orderby_col, fontsize=12)
+    plt.xlabel(x_col, fontsize=8)       # Set x-axis label font size
+    plt.ylabel(y_col, fontsize=8)       # Set y-axis label font size
+    plt.xticks(fontsize=8)              # Set x-axis tick label font size
+    plt.yticks(fontsize=8)  
     plt.show()
     return 
 
@@ -119,7 +123,7 @@ def get_scaled_daram_df():
 
    # barplot을 위한 최종 dataframe
     plot_col = [ 'academy_cnt', 'kindergarten_cnt', 'mart_cnt', 'restaurant_cnt',
-                    'school_cnt', 'university_cnt', 'tour_cnt', 'cafe_cnt',
+                    'school_cnt', 'university_cnt','subway_cnt', 'tour_cnt', 'cafe_cnt',
                     'hospital_cnt', 'culture_cnt', 'univ_hospital_cnt', 'public_office_cnt',
                     'employee_cnt', 'alone_ratio', 'emp_corp_ratio', 'population_15to64']
     df_daram_barplot = df_daram_final[plot_col]
@@ -133,7 +137,7 @@ def get_scaled_daram_df():
     df_daram_scaled['순번'] = 순번
 
     df_daram_scaled.columns = ['academy', 'kindergarten', 'mart', 'restaurant',
-       'school', 'university', 'tour', 'cafe', 'hospital',
+       'school', 'university', 'subway','tour', 'cafe', 'hospital',
        'culture', 'univ_hospital', 'public_office', 'employee',
        'alone_ratio', 'emp_corp_ratio', 'population_15to64', '노선명','순번']
     
@@ -153,7 +157,7 @@ def get_barplot_start_end(df):
         df_end = df[df.index == bus].iloc[1, :-1]
 
         # Create a figure with two subplots side by side (1 row, 2 columns)
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 6))
 
         # Plot the first bar chart on the first subplot (left)
         sns.barplot(x=df_start.index, y=df_start.values, ax=ax1, label='infra_count')
@@ -173,7 +177,7 @@ def get_barplot_start_end(df):
         plt.tight_layout()
 
         # Show the combined plot with both bar charts
-        plt.show()
+        plt.show();
 
 # 상관관계 heatmap
 def get_heatmap_data():
@@ -196,13 +200,12 @@ def get_heatmap_data():
 
 def get_heatmap(data):
     plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
-    sns.set(rc={'figure.figsize':(15,15)})
-    sns.heatmap(data.corr(),annot = True,linewidths=.5, annot_kws = {'size':10})
+    sns.set(rc={'figure.figsize':(10,10)})
+    sns.heatmap(data.corr(),annot = True,linewidths=.5, annot_kws = {'size':7})
 
 
-    plt.figure(figsize=(40, 40))  
     plt.tight_layout()
-    plt.show()
+    plt.show();
 
 
 
@@ -235,23 +238,24 @@ def get_barplot_daram_vs_all():
         df_employee_cnt = df[0].iloc[[13,16]]
         df_ratio = df[0][14:16]
 
-        ax = df_fin_infra.plot.bar(rot=90, figsize=(15, 8)) 
-        ax.set_xticklabels(df_fin_infra.index, fontsize=18)
-        ax.legend(['다람쥐 버스','전체 버스'],fontsize=16)
-        ax.set_title('다람쥐 버스 vs 전체 버스_'+df[1])
-        plt.show() 
+        fig, axs = plt.subplots(1, 3, figsize=(20,5))
 
 
-        ax = df_employee_cnt.plot.bar(rot=0,figsize=(15, 8))  
-        ax.set_xticklabels(df_employee_cnt.index, fontsize=18)
-        ax.legend(['다람쥐 버스','전체 버스'],fontsize=16)
-        ax.set_title('다람쥐 버스 vs 전체 버스_'+df[1])
-        plt.show()  
 
+        df_fin_infra.plot.bar(rot=90, ax=axs[0]) 
+        axs[0].set_xticklabels(df_fin_infra.index, fontsize=12)
+        axs[0].legend(['다람쥐 버스','전체 버스'],fontsize=10)
+        axs[0].set_title('다람쥐 버스 vs 전체 버스_'+df[1])
 
-        ax = df_ratio.plot.bar(rot=0,figsize=(15, 8))  
-        ax.set_xticklabels(df_ratio.index, fontsize=18)
-        ax.legend(['다람쥐 버스','전체 버스'],fontsize=16)
-        ax.set_title('다람쥐 버스 vs 전체 버스_'+df[1])
+        df_employee_cnt.plot.bar(rot=0, ax = axs[1])  
+        axs[1].set_xticklabels(df_employee_cnt.index, fontsize=12)
+        axs[1].legend(['다람쥐 버스','전체 버스'],fontsize=10)
+        axs[1].set_title('다람쥐 버스 vs 전체 버스_'+df[1])
+
+        df_ratio.plot.bar(rot=0, ax = axs[2])  
+        axs[2].set_xticklabels(df_ratio.index, fontsize=12)
+        axs[2].legend(['다람쥐 버스','전체 버스'],fontsize=10)
+        axs[2].set_title('다람쥐 버스 vs 전체 버스_'+df[1])
+
         plt.tight_layout()
-        plt.show()  
+        plt.show();
