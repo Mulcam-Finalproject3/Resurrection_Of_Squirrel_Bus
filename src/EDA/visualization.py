@@ -36,9 +36,13 @@ def df_preprocess(df):
 
 def get_subway_barplot(df, x_col=None, y_col=None, orderby_col=None):
     df = df.sort_values(by=orderby_col, ascending=False)
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(8, 6))
     sns.barplot(y=y_col, x=x_col, data=df[:30])
-    plt.title(orderby_col)
+    plt.title(orderby_col, fontsize=12)
+    plt.xlabel(x_col, fontsize=8)       # Set x-axis label font size
+    plt.ylabel(y_col, fontsize=8)       # Set y-axis label font size
+    plt.xticks(fontsize=8)              # Set x-axis tick label font size
+    plt.yticks(fontsize=8)  
     plt.show()
     return 
 
