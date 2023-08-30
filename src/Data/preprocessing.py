@@ -144,3 +144,41 @@ def get_final_infra_df():
 
 
     return df_final
+
+# mysql에서 데이터 호출
+def call_csv(table):
+    import pandas as pd
+    from sqlalchemy import create_engine
+
+    db_connection_str = "mysql+pymysql://root:1234@127.0.0.1/new_schema"
+    db_connection = create_engine(db_connection_str).raw_connection()
+
+    pop_table = pd.read_sql("SELECT * FROM {}".format(table), con=db_connection)
+
+    # 데이터프레임
+    return pop_table
+
+def get_bus_station_list(bus_route_info, bus_num):
+    bus_list = bus_route_info[bus_route_info['노선명'] == bus_num]['NODE_ID'].tolist()
+    bus_list_str = [str(value) for value in bus_list]
+    return bus_list_str
+
+def get_daram_bus_station(bus_numbers_list):
+    no_daram_bus_df=pd.DataFrame()
+    bus_df=pd.DataFrame()
+
+    for bus_numbers in bus_numbers_list:
+        node_list = bus_stations[bus_numbers]
+        for node in node_list:
+            condition = bus_infra_pop_df['NODE_ID'] == node
+            rows_1 = bus_infra_pop_df[condition]
+            rows_1['노선번호']=bus_numbers
+            bus_df=pd.concat([bus_df,rows_1], axis=0)
+            
+            condition = bus_infra_pop_df['NODE_ID'] != node
+            rows_2 = bus_infra_pop_df[condition]
+            rows_2['노선번호']=bus_numbers
+            no_daram_bus_df=pd.concat([no_daram_bus_df,rows_2], axis=0)
+    no_daram_bus_df = no_daram_bus_df.drop_duplicates(subset=['NODE_ID'])
+
+    return bus_df, no_daram_bus_df
