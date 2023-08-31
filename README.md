@@ -7,11 +7,8 @@ b# Multicampus Final project 3조
 <br></br>
 ## 프로젝트 설명
 > 현재 운행 중인 <u>다람쥐 버스</u>의 특성을 분석하여, 다람쥐 버스가 필요한 "새로운 지역을 선정"하고 "노선의 경로를 설정"하는 프로젝트 입니다.  
-=======
-# 프로젝트명 
-### 수요 대응 버스 분석 및 노선 신설 방안 제시 
 
->>>>>>> 0fc2faace00393623cf6d838b89fba86ee0827b3
+
 
 - 다람쥐 버스란?  
   - 출퇴근시간에 특정구간 반복 운행하는 버스
@@ -21,25 +18,12 @@ b# Multicampus Final project 3조
   - 출근 시간대 대중교통 혼잡도 감소 필요
   - 기존 다람쥐 버스 도입 후 높은 수요 & 도입 효과
   - 다람쥐 버스 노선의 신설에 대한 긍정적인 여론
-<<<<<<< HEAD
-=======
-- 분석 과정  
-  - 기존 다람쥐 버스 분석
-  - 다람쥐 버스가 필요한 새로운 지역 탐색
-  - 새로운 지역내에 다람쥐 버스 경로 설정
-  - 다람쥐버스의 배차수와 배차간격 설정  
->>>>>>> 0fc2faace00393623cf6d838b89fba86ee0827b3
 
  <br></br>
 ## 프로젝트 흐름도      
-<<<<<<< HEAD
 ![Alt text](./src/Data/img/흐름도1.png)   
  <br></br>
-=======
-![Alt text](image.png)   
 
- 
->>>>>>> 0fc2faace00393623cf6d838b89fba86ee0827b3
 ## 프로젝트 진행과정
 ![Alt text](./src/Data/img/흐름도2.png)  
 
@@ -72,7 +56,6 @@ b# Multicampus Final project 3조
 - docs: 문서 수정에 대한 커밋
 - style: 코드 스타일 혹은 포맷 등에 관한 커밋
 - refactor: 코드 리팩토링에 대한 커밋
-<<<<<<< HEAD
 ```
 <br></br>
 ## 모듈 설명
@@ -94,6 +77,3 @@ b# Multicampus Final project 3조
 
 #### `01_EDA1.ipynb`
 #### `02_Clustering.ipynb`
-=======
-```
->>>>>>> 0fc2faace00393623cf6d838b89fba86ee0827b3
