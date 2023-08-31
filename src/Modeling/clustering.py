@@ -263,7 +263,7 @@ def bic_aic(df,min_components, max_components):
 
 
 
-def clustering_gmm(df, cluster_num, random_state):
+def clustering_gmm(df, cluster_num, random_state=None):
     gmm = GaussianMixture(n_components= cluster_num, random_state=random_state).fit(df)
     y_pred = gmm.predict(df)
 
