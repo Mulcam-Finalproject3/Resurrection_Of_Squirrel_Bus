@@ -63,6 +63,27 @@ class RegressionTransformer(BaseEstimator, TransformerMixin):
         # self.pipeline = Pipeline(self.steps)
 
     def fit(self, dataframe):
+        # 로그 변환 적용
+        if self.target:
+            dataframe[self.target] = np.log1p(dataframe[self.target])
+        
+        # 컬럼명 변경
+        if self.rename_cols:
+            dataframe = dataframe.rename(columns=self.rename_cols)
+
+        # 컬럼 삭제
+        if self.drop_cols:
+            dataframe = dataframe.drop(columns=self.drop_cols, axis = 1)
+        
+        # 시간대 데이터를 형식에 맞게 변경
+        dataframe.loc[(dataframe['Hour'] == 600)| 
+                (dataframe['Hour'] == 700) | 
+                (dataframe['Hour'] == 800) | 
+                (dataframe['Hour'] == 900), 'Hour'] = dataframe['Hour'] // 100
+        
+        return dataframe
+
+    def transform(self, dataframe):
         # 원핫 인코딩
         ohe_df = pd.get_dummies(dataframe['Hour'], columns=['Hour'])
         ohe_df = ohe_df.rename(columns={ohe_df.columns[0]: 'six', ohe_df.columns[1]: 'seven', ohe_df.columns[2]: 'eight', ohe_df.columns[3]: 'nine'})
@@ -76,41 +97,7 @@ class RegressionTransformer(BaseEstimator, TransformerMixin):
         concat_df = pd.concat([standard_df, ohe_df], axis = 1)
 
         return concat_df
-
-    def transform(self, dataframe):
-        """로그 변환, standard scaler, one-hot encoding 적용
-
-        Args:
-            dataframe (dataframe): 변환할 데이터프레임
-
-        Returns:
-            concat_df: 변환 완료된 데이터프레임
-        """
-        # 로그 변환 적용
-        if self.target:
-            dataframe[self.target] = np.log1p(dataframe[self.target])
-        
-        # 컬럼명 변경
-        if self.rename_cols:
-            dataframe = dataframe.rename(columns=self.rename_cols)
-
-        # 컬럼 삭제
-        if self.drop_cols in dataframe.columns:
-            dataframe = dataframe.drop(columls=[self.drop_cols], axis = 1)
-        
-        # 시간대 데이터를 형식에 맞게 변경
-        dataframe.loc[(dataframe['Hour'] == 600)| 
-                (dataframe['Hour'] == 700) | 
-                (dataframe['Hour'] == 800) | 
-                (dataframe['Hour'] == 900), 'Hour'] = dataframe['Hour'] // 100
-        
-        return dataframe
-
-    #     self.pipeline.fit(concat_df, dataframe[self.target])
     
-    # def predict(self, X_test):
-    #     return self.pipeline.predict(X_test)
-
 def randomforest_grid_search(X_train, y_train):
     """Randomforest regression GridSearchCV, 최적 모델 pkl 파일로 저장
 
@@ -121,24 +108,26 @@ def randomforest_grid_search(X_train, y_train):
     """
     from sklearn.ensemble import RandomForestRegressor
     from sklearn.model_selection import GridSearchCV
-    import joblib
 
     rf_model = RandomForestRegressor(n_jobs=-1,random_state=42)
 
     grid_parameters ={
-        'n_estimators':[100,200],
-        'max_depth':[5,10,15],
+        'n_estimators':[100, 200],
+        'max_depth':[5, 10, 15],
         'max_features':[1, 0.9, 0.8],
         'min_samples_leaf': [2, 4, 6]
     }
 
-    grid_rf = GridSearchCV(rf_model, param_grid=grid_parameters, scoring='neg_mean_squared_error', cv=5, refit=True)
+    grid_rf = GridSearchCV(rf_model, 
+                           param_grid = grid_parameters, 
+                           scoring='neg_mean_squared_error', 
+                           cv=5, 
+                           refit=True)
     grid_rf.fit(X_train, y_train)
 
     best_model = grid_rf.best_estimator_
 
-    joblib.dump(best_model, f'rf_{X_train}_{best_model}.pkl')
-
+    return best_model
 
 def XGB_grid_search(X_train, y_train):
     """XGB GridSearchCV, 최적 모델 pkl 파일로 저장
@@ -148,9 +137,11 @@ def XGB_grid_search(X_train, y_train):
         y_train (_type_): target
 
     """
+    import pandas as pd
     from xgboost import XGBRegressor
     from sklearn.model_selection import GridSearchCV
-    import joblib
+
+    xgb_model = XGBRegressor()
 
     parameters = {
         "max_depth": [1, 2, 3],
@@ -161,9 +152,9 @@ def XGB_grid_search(X_train, y_train):
     }
 
     grid_xgb = GridSearchCV(
-        XGBRegressor(n_estimators = 100, subsample = 0.5),
+        xgb_model,
         param_grid = parameters,
-        return_train_score = True,
+        error_score='raise',
         n_jobs = -1,
         cv = 3
         )
@@ -172,7 +163,7 @@ def XGB_grid_search(X_train, y_train):
 
     best_model = grid_xgb.best_estimator_
 
-    joblib.dump(best_model, f'xgb_{X_train}_{best_model}.pkl')
+    return best_model
 
 def model_eval(best_model, X_train, X_test, y_train, y_test):
     """평가 지표
@@ -199,7 +190,7 @@ def model_eval(best_model, X_train, X_test, y_train, y_test):
     train_rmse = np.sqrt(abs(mse_train))
     test_rmse = np.sqrt(abs(mse_test))
 
-    print(f"{best_model} RMSE (train) : ", train_rmse)
-    print(f"{best_model} R2 (train) : ", r2_train)
-    print(f"{best_model} RMSE (test) : ", test_rmse)
-    print(f"{best_model} R2 (test) : ", r2_test)
+    print("RMSE (train) : ", train_rmse)
+    print("R2 (train) : ", r2_train)
+    print("RMSE (test) : ", test_rmse)
+    print("R2 (test) : ", r2_test)
