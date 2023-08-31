@@ -105,3 +105,26 @@ def visualize_similar_not_PCA(title,similar_data):  # title은 string으로 기�
     plt.ylabel('ALIGHT')
     plt.title(title)
     plt.show()
+
+
+def PCA_bus_infra(bus_infra_pop_copy_df):
+    from sklearn.preprocessing import StandardScaler
+    pca_column_df = bus_infra_pop_copy_df.loc[:,'academy_cnt':'population_15to64']
+    pca_column_df.head()
+    pca_bus_df =StandardScaler().fit_transform(pca_column_df)
+    pca = PCA(n_components=2)
+    pca.fit(pca_bus_df)
+    pca_transformed_df = pca.transform(pca_bus_df)
+    return pca_transformed_df
+
+def scatter(X,Y,hue,title):
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    sns.scatterplot(x=X, y=Y, hue=hue)
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title(title)
+    plt.legend()
+    plt.show()
+
+
