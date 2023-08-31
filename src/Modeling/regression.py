@@ -72,8 +72,8 @@ class RegressionTransformer(BaseEstimator, TransformerMixin):
             dataframe = dataframe.rename(columns=self.rename_cols)
 
         # 컬럼 삭제
-        if self.drop_cols in dataframe.columns:
-            dataframe = dataframe.drop(columls=[self.drop_cols], axis = 1)
+        if self.drop_cols:
+            dataframe = dataframe.drop(columns=self.drop_cols, axis = 1)
         
         # 시간대 데이터를 형식에 맞게 변경
         dataframe.loc[(dataframe['Hour'] == 600)| 
