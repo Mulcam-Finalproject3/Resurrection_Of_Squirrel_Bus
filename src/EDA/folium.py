@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def get_clustering_folium(df, X_col, Y_col, label_column=None):
     import branca.colormap as cm
     import folium
@@ -86,11 +89,14 @@ def bus_info(df, node_name):
     ]
 
 
-def bus_재차인원(node_num: str or dict, start_idx: int = None, end_idx: int = None) -> int:
+def bus_재차인원(
+    total_df, node_num: str or dict, start_idx: int = None, end_idx: int = None
+) -> int:
     """
     _summary_
 
     parameters:
+        total_df : 전체 정류장의 데이터를 넣는다
         node_num : 노선이름을 쓴다. 또는 재차인원 계산을 원하는 df를 넣는다
         start_idx : 해당 노선에서 원하는 정류장 시작점 인덱스를 적는다
         end_idx : 해당 노선에서 원하는 정류장 종점 인덱스를 적는다
@@ -98,11 +104,13 @@ def bus_재차인원(node_num: str or dict, start_idx: int = None, end_idx: int 
         _type_: _description_
     """
     if isinstance(node_num, str):
-        if node_num in bus_info(node_num)["노선번호"].tolist():
-            if start_idx and end_idx:
-                bus_selected = bus_info(node_num)[start_idx:end_idx].reset_index()
+        if node_num in bus_info(total_df, node_num)["노선번호"].tolist():
+            if start_idx or end_idx:
+                bus_selected = bus_info(total_df, node_num)[
+                    start_idx:end_idx
+                ].reset_index()
             else:
-                bus_selected = bus_info(node_num).reset_index()
+                bus_selected = bus_info(total_df, node_num).reset_index()
 
             bus_selected["6시승하차_sub"] = (
                 bus_selected.loc[:, "6시승차총승객수"] - bus_selected.loc[:, "6시하차총승객수"]
@@ -370,21 +378,35 @@ def squirrel_bus():
 
 # 다람쥐 버스 정류장 노선 및 승하차 인원 표시
 def folium_bus(
-    히트맵_df: dict = None, 히트맵_컬럼: str = None, bus_df: dict = None, 유사도_군집_df: dict = None
+    히트맵_df: dict = None,
+    히트맵_컬럼: str = None,
+    bus_df: dict = None,
+    유사도_군집_df: dict = None,
+    tile_type: str = "gray",
 ):
+    """_summary_
+
+    Args:
+        bus_df (dict, optional): _description_. Defaults to None.
+        tile_type (str, optional): Defaults to "gray". ex) "midnight"
+
+    Returns:
+        _type_: _description_
+    """
     import branca.colormap as cm
     import folium
     from folium import CircleMarker
     from folium.plugins import HeatMap
     from collections import defaultdict
 
-    vworld_key = key
+    vworld_key = "BD606474-76A5-3146-848E-21906146E125"
 
     seoul_center = [37.5665, 126.9780]
     seoul_map = folium.Map(location=seoul_center, zoom_start=12)
 
     # 배경지도 타일 설정하기
-    layer = "midnight"
+    layer = tile_type
+    # "midnight"
     # "gray"
     tileType = "png"
     tiles = f"http://api.vworld.kr/req/wmts/1.0.0/{vworld_key}/{layer}/{{z}}/{{y}}/{{x}}.{tileType}"
@@ -443,28 +465,25 @@ def folium_bus(
 
         # 승하차 인원 표시
         for index, rows in bus_df.iterrows():
-            X, Y, on, off, station_name, node_num = (
+            X, Y, on, off = (
                 rows["X좌표"],
                 rows["Y좌표"],
-                rows["6_9시_승차"],
-                rows["6_9시_하차"],
-                rows["역명"],
-                rows["노선번호"],
+                rows["RIDE_SUM_6_10"],
+                rows["ALIGHT_SUM_6_10"],
             )
             # fill_color = label_colors.get(label, '#FF0000')  # 지정되지 않은 라벨은 red로 설정
             CircleMarker(
                 location=[Y, X],
-                radius=on / 200,
+                radius=on / 25000,
                 tooltip=on,
-                popup={"승차": on, "하차": off, "역명": station_name, "노선번호": node_num},
+                popup={"승차": on, "하차": off},
                 color="greenyellow",
                 fill_opacity=0.2,
             ).add_to(seoul_map)
             CircleMarker(
                 location=[Y, X],
-                radius=off / 200,
+                radius=off / 25000,
                 tooltip=off,
-                popup=station_name,
                 color="orangered",
                 fill_opacity=0.2,
             ).add_to(seoul_map)
@@ -474,19 +493,11 @@ def folium_bus(
         pass
     else:
         for index, rows in 유사도_군집_df.iterrows():
-            X, Y, label, on, off, station_name = (
-                rows["X좌표_x"],
-                rows["Y좌표_x"],
-                rows["gmm_cluster"],
-                rows["RIDE_SUM_6_10"],
-                rows["ALIGHT_SUM_6_10"],
-                rows["정류소명"],
-            )
+            X, Y, label = (rows["X좌표"], rows["Y좌표"], rows["gmm_cluster"])
             fill_color = label_colors.get(label, "#FF0000")  # 지정되지 않은 라벨은 red로 설정
             CircleMarker(
                 location=[Y, X],
                 radius=0.1,
-                tooltip=station_name,
                 # radius= off /70000,
                 # tooltip= off ,
                 fill=True,
