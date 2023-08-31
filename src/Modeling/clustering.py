@@ -30,7 +30,8 @@ sys.path.append(current_path)
 from Data.preprocessing import *
 from EDA.visualization import *
 
-df_infra = get_final_infra_df()
+df_infra = pd.read_csv(os.path.join(csv_path, 'final_tb_infra_population.csv'))
+# df_infra = get_final_infra_df()
 df_bus_info = pd.read_csv(os.path.join(csv_path, 'bus_route_info.csv'))
 tb_infra_population = pd.read_csv(os.path.join(csv_path, 'tb_infra_population.csv'))
 

@@ -21,7 +21,8 @@ sys.path.append(current_path)
 from Data.preprocessing import *
 bus_route_info = pd.read_csv(rf'{csv_path}\bus_route_info.csv')
 tb_infra_population = pd.read_csv(rf'{csv_path}\tb_infra_population.csv')
-final_tb_infra_population = get_final_infra_df()
+# final_tb_infra_population = get_final_infra_df()
+final_tb_infra_population = pd.read_csv(rf'{csv_path}\final_tb_infra_population.csv')
 
 
 
