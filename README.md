@@ -1,10 +1,10 @@
-<<<<<<< HEAD
-b# Multicampus Final project 3조
-# <수요 대응 버스 분석 및 노선 신설 방안 제시>
+
+# 수요 대응 버스 분석 및 노선 신설 방안 제시
+- ### 프로젝트 조: Multicampus Final project 3조
 - ### 프로젝트 기간: 2023.06.20~2023.07.31
 - ### 프로젝트 구성원 : 양충모, 김은비, 김지연, 서정식   
 - ### 프로젝트 지원: 멀티캠퍼스
-<br></br>
+
 ## 프로젝트 설명
 > 현재 운행 중인 <u>다람쥐 버스</u>의 특성을 분석하여, 다람쥐 버스가 필요한 "새로운 지역을 선정"하고 "노선의 경로를 설정"하는 프로젝트 입니다.  
 
@@ -19,13 +19,13 @@ b# Multicampus Final project 3조
   - 기존 다람쥐 버스 도입 후 높은 수요 & 도입 효과
   - 다람쥐 버스 노선의 신설에 대한 긍정적인 여론
 
- <br></br>
-## 프로젝트 흐름도      
-![Alt text](./src/Data/img/흐름도1.png)   
- <br></br>
+ 
 
+## 프로젝트 흐름도      
+![Alt text](./src/img/흐름도1.png)   
+ 
 ## 프로젝트 진행과정
-![Alt text](./src/Data/img/흐름도2.png)  
+![Alt text](./src/img/흐름도2.png)    
 
 
 <!-- - 데이터 수집  
@@ -43,11 +43,11 @@ b# Multicampus Final project 3조
 - 공공데이터 
 - 통계청 
 - KAKAO API  -->
- <br></br>
+
 
  ## Environment
  python, jupyter notebook
- <br></br>
+
 ## Git Hub Commit 
 ```
 - feat: 새로운 기능에 대한 커밋
@@ -57,8 +57,9 @@ b# Multicampus Final project 3조
 - style: 코드 스타일 혹은 포맷 등에 관한 커밋
 - refactor: 코드 리팩토링에 대한 커밋
 ```
-<br></br>
-## 모듈 설명
+
+## 모듈 설명  
+<⭐⭐아래 py에 링크 달것.⭐⭐>
   #### Data
   - `bus_preprocessing.py`: 
   - `Extract.py`: 데이터 수집
