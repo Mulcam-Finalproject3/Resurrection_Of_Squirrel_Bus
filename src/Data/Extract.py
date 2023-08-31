@@ -332,16 +332,27 @@ def get_sgis_accessToken():
     Returns:
         _type_: _description_
     """
-  SGIS_API = "https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json?consumer_key={}&consumer_secret={}"
-  C_KEY = "5a856ac23eac44689cb4" # 서비스 ID
-  C_SECRET = "3f8798ac490345dca660" # 보안
-  response = requests.get(REAL_TIME_API.format(C_KEY, C_SECRET))
-  response.status_code
-  data = response.json()
-  token = data['result']['accessToken'] # 인증 토큰
+    SGIS_API = "https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json?consumer_key={}&consumer_secret={}"
+    C_KEY = "5a856ac23eac44689cb4" # 서비스 ID
+    C_SECRET = "3f8798ac490345dca660" # 보안
+    response = requests.get(REAL_TIME_API.format(C_KEY, C_SECRET))
+    response.status_code
+    data = response.json()
+    token = data['result']['accessToken'] # 인증 토큰
 
-  return token
+    return token
 
+def call_csv(table):
+    import pandas as pd
+    from sqlalchemy import create_engine
+
+    db_connection_str = "mysql+pymysql://root:1234@127.0.0.1/new_schema"
+    db_connection = create_engine(db_connection_str).raw_connection()
+
+    pop_table = pd.read_sql("SELECT * FROM {}".format(table), con=db_connection)
+
+    # 데이터프레임
+    return pop_table
 
 def get_population_data():
     """_summary_
