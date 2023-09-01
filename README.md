@@ -62,14 +62,13 @@
 ## 모듈 설명  
 <⭐⭐아래 py에 링크 달것.⭐⭐>
   #### Data
-  - `bus_preprocessing.py`: 
-  - `Extract.py`: 데이터 수집
-  - `preprocessing_regression.py`: 회귀 데이터의 전처리
-  - `preprocessing.py`: 수집된 통계, 인프라, 버스 데이터를 전처리하여 1차 분석에 필요한 데이터 프레임 반환
 
+  - [Extract.py](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/fa563f0241962d8eb74a49d7627080da30d6bca3/src/Data/Extract.py): 데이터 수집
+  - [preprocessing.py](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/fa563f0241962d8eb74a49d7627080da30d6bca3/src/Data/preprocessing.py): 수집된 통계, 인프라, 버스 데이터를 전처리하여 1차 분석에 필요한 데이터 프레임 반환
+  - [bus_preprocessing.py](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/fa563f0241962d8eb74a49d7627080da30d6bca3/src/Data/bus_preprocessing.py) : 공공데이터에서 수집한 버스 데이터 전처리
+  - [preprocessing_regression.py](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/fa563f0241962d8eb74a49d7627080da30d6bca3/src/Data/preprocessing_regression.py): 회귀 데이터의 전처리
+- [PCA_Preprocessing.py]([src/Data/PCA_Preprocessing.ipynb](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/fa563f0241962d8eb74a49d7627080da30d6bca3/src/Data/PCA_Preprocessing.ipynb))
 #### EDA
-- `local_selection.ipynb`
-- `passenger.ipynb`
 - `route_selection.ipynb`
 - `zeppelin.ipynb`
 #### Modeling
