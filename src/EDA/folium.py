@@ -382,13 +382,14 @@ def folium_bus(
     히트맵_컬럼: str = None,
     bus_df: dict = None,
     유사도_군집_df: dict = None,
+    유사도_class_column: str = None,
     tile_type: str = "gray",
 ):
     """_summary_
 
     Args:
-        bus_df (dict, optional): _description_. Defaults to None.
-        tile_type (str, optional): Defaults to "gray". ex) "midnight"
+        bus_df (dict, optional): 버스 노선 시각화. Defaults to None.
+        tile_type (str, optional): Defaults to "gray". ex) "midnight","hybrid"
 
     Returns:
         _type_: _description_
@@ -455,45 +456,97 @@ def folium_bus(
     if bus_df is None:
         pass
     else:
-        node = node_group(bus_df)
-        for i in node:
-            folium.PolyLine(
-                locations=eval(i)[["Y좌표", "X좌표"]].values.tolist(),
-                opacity=0.6,
-                color="yellow",
-            ).add_to(seoul_map)
+        try:
+            if "노선번호" in bus_df.columns:
+                node = node_group(bus_df)
+                for i in node:
+                    folium.PolyLine(
+                        locations=eval(i)[["Y좌표", "X좌표"]].values.tolist(),
+                        opacity=0.6,
+                        color="yellow",
+                    ).add_to(seoul_map)
 
-        # 승하차 인원 표시
-        for index, rows in bus_df.iterrows():
-            X, Y, on, off = (
-                rows["X좌표"],
-                rows["Y좌표"],
-                rows["RIDE_SUM_6_10"],
-                rows["ALIGHT_SUM_6_10"],
-            )
-            # fill_color = label_colors.get(label, '#FF0000')  # 지정되지 않은 라벨은 red로 설정
-            CircleMarker(
-                location=[Y, X],
-                radius=on / 25000,
-                tooltip=on,
-                popup={"승차": on, "하차": off},
-                color="greenyellow",
-                fill_opacity=0.2,
-            ).add_to(seoul_map)
-            CircleMarker(
-                location=[Y, X],
-                radius=off / 25000,
-                tooltip=off,
-                color="orangered",
-                fill_opacity=0.2,
-            ).add_to(seoul_map)
+                # 승하차 인원 표시
+                for index, rows in bus_df.iterrows():
+                    X, Y, on, off = (
+                        rows["X좌표"],
+                        rows["Y좌표"],
+                        rows["RIDE_SUM_6_10"],
+                        rows["ALIGHT_SUM_6_10"],
+                    )
+                    # fill_color = label_colors.get(label, '#FF0000')  # 지정되지 않은 라벨은 red로 설정
+                    CircleMarker(
+                        location=[Y, X],
+                        radius=on / 25000,
+                        tooltip=on,
+                        popup={"승차": on, "하차": off},
+                        color="greenyellow",
+                        fill_opacity=0.2,
+                    ).add_to(seoul_map)
+                    CircleMarker(
+                        location=[Y, X],
+                        radius=off / 25000,
+                        tooltip=off,
+                        color="orangered",
+                        fill_opacity=0.2,
+                    ).add_to(seoul_map)
+            else:
+                # 승하차 인원 표시
+                for index, rows in bus_df.iterrows():
+                    X, Y, on, off = (
+                        rows["X좌표"],
+                        rows["Y좌표"],
+                        rows["RIDE_SUM_6_10"],
+                        rows["ALIGHT_SUM_6_10"],
+                    )
+                    # fill_color = label_colors.get(label, '#FF0000')  # 지정되지 않은 라벨은 red로 설정
+                    CircleMarker(
+                        location=[Y, X],
+                        radius=on / 25000,
+                        tooltip=on,
+                        popup={"승차": on, "하차": off},
+                        color="greenyellow",
+                        fill_opacity=0.2,
+                    ).add_to(seoul_map)
+                    CircleMarker(
+                        location=[Y, X],
+                        radius=off / 25000,
+                        tooltip=off,
+                        color="orangered",
+                        fill_opacity=0.2,
+                    ).add_to(seoul_map)
+        except:
+            # 승하차 인원 표시
+            for index, rows in bus_df.iterrows():
+                X, Y, on, off = (
+                    rows["X좌표"],
+                    rows["Y좌표"],
+                    rows["RIDE_SUM_6_10"],
+                    rows["ALIGHT_SUM_6_10"],
+                )
+                # fill_color = label_colors.get(label, '#FF0000')  # 지정되지 않은 라벨은 red로 설정
+                CircleMarker(
+                    location=[Y, X],
+                    radius=on / 25000,
+                    tooltip=on,
+                    popup={"승차": on, "하차": off},
+                    color="greenyellow",
+                    fill_opacity=0.2,
+                ).add_to(seoul_map)
+                CircleMarker(
+                    location=[Y, X],
+                    radius=off / 25000,
+                    tooltip=off,
+                    color="orangered",
+                    fill_opacity=0.2,
+                ).add_to(seoul_map)
 
     # 유사도 정류장 1315개 표시
     if 유사도_군집_df is None:
         pass
     else:
         for index, rows in 유사도_군집_df.iterrows():
-            X, Y, label = (rows["X좌표"], rows["Y좌표"], rows["gmm_cluster"])
+            X, Y, label = (rows["X좌표"], rows["Y좌표"], rows[유사도_class_column])
             fill_color = label_colors.get(label, "#FF0000")  # 지정되지 않은 라벨은 red로 설정
             CircleMarker(
                 location=[Y, X],
