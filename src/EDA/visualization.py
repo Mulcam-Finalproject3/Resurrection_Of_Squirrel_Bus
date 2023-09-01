@@ -365,8 +365,9 @@ def get_barplot_daram_vs_all():
         plt.tight_layout()
         plt.show()
 
-        
+
 def visualize_similar_gmm_map(html_name,similar_data):
+    import folium
     # 서울 중심 좌표
     seoul_center = [37.5665, 126.9780]
     label_colors = {
