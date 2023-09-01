@@ -281,7 +281,7 @@ def get_clustering_folium(df, X_col, Y_col, label_column=None):
     seoul_map = folium.Map(location=seoul_center, zoom_start=12)
 
     label_colors = {
-        0: '#00BFFF',   # skyblue
+        0: '#FFC0CB',   # skyblue
         1: '#0000FF',   # blue
         2: '#008000',   # green
         3: '#FFA500',   # orange
