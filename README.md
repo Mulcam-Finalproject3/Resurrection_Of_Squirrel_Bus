@@ -25,12 +25,7 @@
  <br>
 
 ## 프로젝트 흐름도      
-![Alt text](./src/Data/img/흐름도1.png)   
-  
-<br>
-
-## 프로젝트 진행과정
-![Alt text](./src/Data/img/흐름도2.png)    
+![Alt text](./src/Data/img/최종흐름도.png)  
 1. 분석에 필요한 데이터 수집.  
 2. EDA 1차 목표: 다람쥐 버스를 신설할 지역 선정
 3. EDA 2차 목표: 
