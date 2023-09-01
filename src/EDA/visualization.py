@@ -364,3 +364,36 @@ def get_barplot_daram_vs_all():
 
         plt.tight_layout()
         plt.show()
+
+        
+def visualize_similar_gmm_map(html_name,similar_data):
+    # 서울 중심 좌표
+    seoul_center = [37.5665, 126.9780]
+    label_colors = {
+    0: '#FFC0CB',   # pink
+    1: '#0000FF',   # blue
+    2: '#008000',   # green
+    3: '#FFA500',   # orange
+    4: '#800080',   # purple
+    5: '#FF0000',   # red
+    6: '#008080',   # Teal
+    7: '#000080',    # navy
+    8: '#00FF00',    # lime
+    9: '#A9A9A9',    # darkgray
+    10: '#A52A2A',  # Brown
+    11: '#FFFF00'   # Yellow
+    }
+    # Folium 지도 객체 생성
+    map_seoul = folium.Map(location=seoul_center, zoom_start=12)
+    for index, rows in similar_data.iterrows():
+        X, Y, label = rows['X좌표'], rows['Y좌표'], rows['gmm_cluster']
+        fill_color = label_colors.get(label, '#FF0000')  # 지정되지 않은 라벨은 red로 설정
+        folium.CircleMarker(location=[Y, X],
+            radius= 5,
+            fill=True,
+            fill_opaticy=0.6,
+            color=fill_color,
+            fill_opacity=0.4).add_to(map_seoul)
+
+    # Folium 지도 출력
+    map_seoul.save(html_name) 
