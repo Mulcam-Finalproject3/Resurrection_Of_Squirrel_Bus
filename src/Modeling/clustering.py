@@ -369,3 +369,123 @@ def get_clustering_folium(df, X_col, Y_col, label_column=None):
 
 # if __name__ == '__main__':
 #     main()
+
+
+# DBSCAN
+    # PCA_DBSCAN
+def DBSCAN_PCA(DB_SCAN_daram_1400_df):
+    DB_pca_column_df = DB_SCAN_daram_1400_df.loc[:,'academy_cnt':'population_15to64']
+    DB_pca_column_df.head()
+    DB_pca_bus_df =StandardScaler().fit_transform(DB_pca_column_df)
+    pca = PCA(n_components=2)
+    pca.fit(DB_pca_bus_df)
+    DB_pca_transformed_df = pca.transform(DB_pca_bus_df)
+
+    DB_pca_pre_scatter_df=pd.DataFrame(DB_pca_transformed_df)
+
+    DB_ready_df=pd.concat([DB_pca_pre_scatter_df,DB_SCAN_daram_1400_df['Label']], axis=1)
+    return DB_ready_df
+
+
+    # DBSCAN serach best parameter
+def search_bset_parameter_DBSCAN(eps_list,min_samples_list,method_list,pca_list,scale_list):
+    from sklearn.cluster import DBSCAN
+    for k in pca_list:
+        pca = PCA(n_components=k)
+        
+        for i, data in enumerate(scale_list):
+            print(method_list[i])
+            data_pca = pca.fit_transform(data)
+
+
+            for eps in eps_list:
+                for min_samples in min_samples_list:
+                    dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+                    model = dbscan.fit(data_pca)
+                    labels = model.labels_
+                    unique_labels = set(labels)
+
+                    if -1 in unique_labels:
+                        noise_exists = 1
+                    else:
+                        noise_exists = 0
+
+                    n_clusters = len(unique_labels) - noise_exists
+
+                    if n_clusters > 1:
+                        score = silhouette_score(data_pca, labels)
+                        print(f'eps: {eps}, min_samples: {min_samples}, pca: {k}, Silhouette score: {score}')
+                    else:
+                        print(f'eps: {eps}, min_samples: {min_samples}, pca: {k}, Silhouette score N/A for single cluster.')
+            print("\n")
+    return 
+
+    # DBSCAN best parameter visualization
+def best_parameter_visualization_DBSCAN(eps_list,min_samples_list,feature_df_pca):
+    from sklearn.cluster import DBSCAN
+    fig, axes = plt.subplots(1, len(eps_list), figsize=(15, 5))
+    for i, eps in enumerate(eps_list):
+        for min_samples in min_samples_list:
+            clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(feature_df_pca)
+            labels = clustering.labels_
+            silhouette = round(silhouette_score(feature_df_pca, labels), 3)
+            
+            ax = axes[i]
+            ax.scatter(feature_df_pca[:, 0], feature_df_pca[:, 1], c=labels, cmap='viridis')
+            ax.set_title(f'eps: {eps}, min_samples: {min_samples}, silhouette score: {silhouette}')
+
+    plt.tight_layout()
+    plt.show()
+    return labels
+
+    # DBSCAN FOLIUM
+def DBSCAN_folium(DB_SCAN_Folium_df):
+    seoul_center = [37.5665, 126.9780]
+    seoul_map = folium.Map(location=seoul_center, zoom_start=12)
+
+    label_colors = {
+        -1:  '#FFC0CB', 
+        0:   '#0000FF',
+        4:    '#008000',
+        1:     '#FFA500',
+        3:    '#FF0000', 
+        5:    '#008080',
+        2:    '#000080' 
+    ''' 0: '#FFC0CB',   # pink
+        1: '#0000FF',   # blue
+        2: '#008000',   # green
+        3: '#FFA500',   # orange
+        4: '#800080',   # purple
+        5: '#FF0000',   # red
+        6: '#008080',   # skyblue
+        7: '#000080'    # navy'''
+    }
+
+    folium_data = DB_SCAN_Folium_df[['X좌표', 'Y좌표', 'C']]
+
+    for index, rows in folium_data.iterrows():
+        X, Y, label = rows['X좌표'], rows['Y좌표'], rows['C']
+        fill_color = label_colors.get(label, '#FF0000')  # 지정되지 않은 라벨은 red로 설정
+        folium.Circle(
+            location=[Y, X],
+            
+            color=fill_color,
+            fill=True,
+            fill_opacity=0.4,
+        ).add_to(seoul_map)
+
+    return seoul_map
+
+
+    # Light Gray: #D3D3D3
+    # Dark Gray: #A9A9A9
+    # Brown: #A52A2A
+    # Yellow: #FFFF00
+    # Gold: #FFD700
+    # Cyan: #00FFFF
+    # Magenta: #FF00FF
+    # Lime: #00FF00
+    # Silver: #C0C0C0
+    # Teal: #008080
+    # Maroon: #800000
+    # Olive: #808000
