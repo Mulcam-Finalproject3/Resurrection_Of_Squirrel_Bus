@@ -144,7 +144,7 @@ def busstation_XY_dong(Bus_Location_df, list):
         y = i[1]
 
         url = f"https://dapi.kakao.com/v2/local/geo/coord2regioncode?x={x}&y={y}"
-        API_KEY = "45635cd5acc8c9d86c84895fcfd0e313"
+        API_KEY = ''
         headers = {"Authorization": "KakaoAK {}".format(API_KEY)}
         api_test = requests.get(url, headers=headers)
         data = requests.get(urlparse(url).geturl(), headers=headers).json()
