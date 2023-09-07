@@ -259,6 +259,62 @@ def xy():
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
+class XY2Grid:
+    """위도 경도를 X,Y 좌표로 바꾸기
+
+    Returns:
+        _type_: _description_
+    """
+    import math
+
+    def __init__(self):
+        self.NX = 149            ## X축 격자점 수
+        self.NY = 253            ## Y축 격자점 수
+
+        self.Re = 6371.00877     ##  지도반경
+        self.grid = 5.0          ##  격자간격 (km)
+        self.slat1 = 30.0        ##  표준위도 1
+        self.slat2 = 60.0        ##  표준위도 2
+        self.olon = 126.0        ##  기준점 경도
+        self.olat = 38.0         ##  기준점 위도
+        self.xo = 210 / self.grid     ##  기준점 X좌표
+        self.yo = 675 / self.grid     ##  기준점 Y좌표
+        self.first = 0
+
+        if self.first == 0:
+            self.PI = self.math.asin(1.0) * 2.0
+            self.DEGRAD = self.PI / 180.0
+            self.RADDEG = 180.0 / self.PI
+
+            self.re = self.Re / self.grid
+            self.slat1 = self.slat1 * self.DEGRAD
+            self.slat2 = self.slat2 * self.DEGRAD
+            self.olon = self.olon * self.DEGRAD
+            self.olat = self.olat * self.DEGRAD
+
+            self.sn = self.math.tan(self.PI * 0.25 + self.slat2 * 0.5) / self.math.tan(self.PI * 0.25 + self.slat1 * 0.5)
+            self.sn = self.math.log(self.math.cos(self.slat1) / self.math.cos(self.slat2)) / self.math.log(self.sn)
+            self.sf = self.math.tan(self.PI * 0.25 + self.slat1 * 0.5)
+            self.sf = self.math.pow(self.sf, self.sn) * self.math.cos(self.slat1) / self.sn
+            self.ro = self.math.tan(self.PI * 0.25 + self.olat * 0.5)
+            self.ro = self.re * self.sf / self.math.pow(self.ro, self.sn)
+            self.first = 1
+
+    #  위도,경도를 격자로 변환
+    def map_to_grid(self, lat, lon, code=0):
+        ra = self.math.tan(self.PI * 0.25 + lat * self.DEGRAD * 0.5)
+        ra = self.re * self.sf / pow(ra, self.sn)
+        theta = lon * self.DEGRAD - self.olon
+        if theta > self.PI:
+            theta -= 2.0 * self.PI
+        if theta < -self.PI:
+            theta += 2.0 * self.PI
+        theta *= self.sn
+        x = (ra * self.math.sin(theta)) + self.xo
+        y = (self.ro - ra * self.math.cos(theta)) + self.yo
+        x = int(x + 1.5)
+        y = int(y + 1.5)
+        return x, y
 
 class WeatherTransformer(BaseEstimator, TransformerMixin):
     def __init__(self):
@@ -322,64 +378,104 @@ def weather_api():
     res = requests.get(url + queryParams, verify=False)  # verify=False이거 안 넣으면 에러남ㅜㅜ
     items = res.json().get("response").get("body").get("items")  # 데이터들 아이템에 저장
 
-    transformer_test = WeatherTransformer().fit_transform(items["item"])
+    return items
 
-    return transformer_test
+def get_weather_data(dataframe):
+    for i, r in dataframe.iterrows():
+        # x,y좌표를 격자 좌표로 변형 
+        raw_x=r['Y']
+        raw_y=r['X'] 
+    
+        grid_converter = XY2Grid()
+        nx,ny = grid_converter.map_to_grid(raw_x, raw_y)
+        
+        items = weather_api(nx, ny)
+        print(items)
+        print()
+        transformer_test = WeatherTransformer().fit_transform(items['item'])
+        result_XY_weather=transformer_test[(transformer_test.index =='0600') | 
+                                        (transformer_test.index =='0700') |
+                                        (transformer_test.index =='0800') |
+                                        (transformer_test.index =='0900')]
+        
+        A_list=[]
+        
+        for index, rows in result_XY_weather.iterrows():
+            # 여기 바꿔야 날짜 바뀜
+            df_row = [date_time.today, raw_y, raw_x, nx, ny, index] + rows.tolist()
+        
+            A_list.append(df_row)
+        new_df = pd.DataFrame(A_list, columns=['Date','raw_x','raw_y','X','Y','time','TMP', 'VEC', 'WSD', 'PCP', 'REH'])
+        
+        
+        df = pd.concat([df, new_df],axis=0)
+        df['Date']=df['Date'].apply(pd.to_datetime)
+
 def get_sgis_accessToken():
-    """_summary_
-    SGIS 인증 토큰 가져오는 코드
+    """SGIS 인증 토큰 호출 함수
 
     Returns:
         _type_: _description_
     """
     SGIS_API = "https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json?consumer_key={}&consumer_secret={}"
+
     C_KEY = "5a856ac23eac44689cb4" # 서비스 ID
-    C_SECRET = "3f8798ac490345dca660" # 보안
-    response = requests.get(REAL_TIME_API.format(C_KEY, C_SECRET))
+    C_SECRET = "3f8798ac490345dca660" # 보안키
+
+    response = requests.get(SGIS_API.format(C_KEY, C_SECRET))
     response.status_code
     data = response.json()
     token = data['result']['accessToken'] # 인증 토큰
 
     return token
 
-def call_csv(table):
-    import pandas as pd
-    from sqlalchemy import create_engine
-
-    db_connection_str = "mysql+pymysql://root:1234@127.0.0.1/new_schema"
-    db_connection = create_engine(db_connection_str).raw_connection()
-
-    pop_table = pd.read_sql("SELECT * FROM {}".format(table), con=db_connection)
-
-    # 데이터프레임
-    return pop_table
 
 def get_population_data():
-    """_summary_
-    인구, 가구수 데이터 뽑기
+    """SGIS API를 이용해 인구수, 가구수 데이터 추출
 
     Returns:
-        _type_: _description_
+        _type_: 인구수 데이터프레임, 가구수 데이터프레임
     """
-    
-    POPULATION_TOTAL_API = 'https://sgisapi.kostat.go.kr/OpenAPI3/stats/population.json'
+    from pandas import json_normalize
+    import pandas as pd
+    import requests
+
+    POPULATION_TOTAL_API = "https://sgisapi.kostat.go.kr/OpenAPI3/stats/population.json"
     POPULATION_15to64_API = "https://sgisapi.kostat.go.kr/OpenAPI3/stats/searchpopulation.json"
-    token = getAccessToken()
+    HOUSEHOLD_API = "https://sgisapi.kostat.go.kr/OpenAPI3/stats/household.json"
 
-    total_population_api_url = f"{API}?accessToken={token}&year=2020&adm_cd=11&low_search=2"
+    token = get_sgis_accessToken()
+
+    total_population_api_url = f"{POPULATION_TOTAL_API}?accessToken={token}&year=2020&adm_cd=11&low_search=2"
     population_15to64_api_url = f"{POPULATION_15to64_API}?accessToken={token}&year=2020&adm_cd=11&low_search=2&age_type=23"
+    household_family_api_url = f"{HOUSEHOLD_API}?accessToken={token}&year=2020&adm_cd=11&low_search=2&household_type=01,02,03"
+    household_alone_api_url = f"{HOUSEHOLD_API}?accessToken={token}&year=2020&adm_cd=11&low_search=2&household_type=A0"
     
-    response = requests.get(api_url)
-    population_data = response.json()
-    population_data_json = json_normalize(population_data['result'])
+    api_list = [total_population_api_url, population_15to64_api_url, household_family_api_url, household_alone_api_url]
 
-    df_population_result = pd.DataFrame(population_data_json)
-    df_population_result = df_population_result.rename(columns={"population": f"population_code_15to64"}).drop(axis = 1, columns = ["adm_nm", "avg_age"])
+    for api in api_list:
 
-    df_population_result = pd.DataFrame(population_data_json)
-    df_population_result = df_population_result.loc[:, ['adm_cd', 'adm_nm', 'tot_family', 'tot_ppltn', 'corp_cnt', 'employee_cnt']]
+        response = requests.get(api)
+        data = response.json()
+        json_data = json_normalize(data['result'])
+
+        result_df = pd.DataFrame(json_data)
+
+        if api == population_15to64_api_url:
+            total_population_df = result_df.rename(columns={"population": f"population_code_15to64"}).drop(axis = 1, columns = ["adm_nm", "avg_age"])
+        elif api == total_population_api_url:
+            population_15to64_df = result_df.loc[:, ['adm_cd', 'adm_nm', 'tot_family', 'tot_ppltn', 'corp_cnt', 'employee_cnt']]
+        elif api == household_family_api_url:
+            household_family_df = result_df
+            household_family_df.drop(columns=['family_member_cnt', 'avg_family_member_cnt'], axis=1, inplace=True)
+            household_family_df.rename(columns={"household_cnt": f"household_cnt_family"}, inplace=True)
+        elif api == household_alone_api_url:
+            household_alone_df = result_df
+            household_alone_df.drop(columns=['family_member_cnt', 'avg_family_member_cnt'], axis=1, inplace=True)
+            household_alone_df.rename(columns={"household_cnt": f"household_cnt_alone"}, inplace=True)
+
     
-    df_total_population = pd.merge(df_total_population, df_population_age, how='left', on=['adm_cd'])
-    df_total_population
+    population_merge_df = pd.merge(total_population_df, population_15to64_df, how='left', on=['adm_cd'])
+    household_merge_df = pd.merge(household_family_df, household_alone_df, how='left', left_on=['adm_cd', 'adm_nm'], right_on=['adm_cd', 'adm_nm'])
 
-    return df_population_result
+    return population_merge_df, household_merge_df
