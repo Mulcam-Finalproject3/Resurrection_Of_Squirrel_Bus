@@ -578,10 +578,10 @@ def folium_bus(
             ).add_to(seoul_map)
 
     # Add heatmap
-    steps = 15
-    gradient_map = defaultdict(dict)
-    for i in range(steps):
-        gradient_map[1 / steps * i] = color_map.rgb_hex_str(1 / steps * i)
+    # steps = 15
+    # gradient_map = defaultdict(dict)
+    # for i in range(steps):
+    #     gradient_map[1 / steps * i] = color_map.rgb_hex_str(1 / steps * i)
 
     if 히트맵_df is None:
         pass
@@ -590,8 +590,8 @@ def folium_bus(
         HeatMap(
             data=zip(히트맵_df["Y좌표"], 히트맵_df["X좌표"], 히트맵_df[히트맵_컬럼]),
             radius=13,
-            gradient=gradient_map,
+            # gradient=gradient_map,
         ).add_to(seoul_map)
 
-    seoul_map.save("다람쥐버스_노선_승하차_히트맵.html")
+    # seoul_map.save("다람쥐버스_노선_승하차_히트맵.html")
     return seoul_map
