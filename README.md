@@ -52,7 +52,7 @@
 
 
  ## Environment
- python, jupyter notebook
+ python, jupyter notebook, ubuntu, spark
 <br>
 
 ## Git Hub Commit 
