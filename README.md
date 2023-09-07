@@ -85,7 +85,7 @@
 - [clustering.py](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/4fd26975cc1d171144e10818462ceb6fee42f912/src/Modeling/clustering.py): EDA 1차에 사용된 군집 알고리즘(KMeans, GMM, DBSCAN)
 - [regression.py](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/4fd26975cc1d171144e10818462ceb6fee42f912/src/Modeling/regression.py): 회귀 알고리즘(XGBoost, Random Forest)
 
----- 여기 아래 수정----🌟
-#### [01_EDA1.ipynb](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/4fd26975cc1d171144e10818462ceb6fee42f912/src/01_EDA1.ipynb) : 1차 EDA
-#### [02_Clustering.ipynb]()
-#### [regression.ipynb](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/4fd26975cc1d171144e10818462ceb6fee42f912/src/regression.ipynb)
+#### [01_preprocessing.ipynb](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/7d9773f29868a925b71645c0db4d7f18a7de4477/src/01_preprocessing.ipynb) : 데이터 전처리 과정
+#### [02_EDA1.ipynb](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/7d9773f29868a925b71645c0db4d7f18a7de4477/src/02_EDA1.ipynb) : 다람쥐 버스 신설 지역 선정 과정
+#### [03_EDA2_기존경유지분석.ipynb](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/7d9773f29868a925b71645c0db4d7f18a7de4477/src/03_EDA2_%EA%B8%B0%EC%A1%B4%EA%B2%BD%EC%9C%A0%EC%A7%80%EB%B6%84%EC%84%9D.ipynb) :  노선 경로 선정 과정
+#### [regression.ipynb](https://github.com/Mulcam-Finalproject3/Resurrection_Of_Squirrel_Bus/blob/7d9773f29868a925b71645c0db4d7f18a7de4477/src/04_regression.ipynb) : 기후 변화에 따른 승차 인원 수 예
