@@ -35,11 +35,12 @@ def congestion_hour_standard(재차인원_df, per_bus_num: int, standard: int = 
     return a[a > standard]
 
 
-def reduce_congestion_bus_num(재차인원_df, hour_coulmns: list, per_bus_num: int):
+def reduce_congestion_bus_num(재차인원_df, hour: int, per_bus_num: int):
     for bus_num in range(20):
-        max_value = 재차인원_df[hour_coulmns].max().max()
-        if round(max_value / ((int(bus_num) + per_bus_num) * 30), 1) < 21:
-            return bus_num
+        pred_passenger_hour = 재차인원_df[재차인원_df.Hour == hour]["재차인원"]
+        max_value = pred_passenger_hour.max()
+        if round(max_value / ((int(bus_num) + per_bus_num)), 1) < 21:
+            return f"재차인원 : {round(max_value / ((int(bus_num) + per_bus_num)), 1)}, 추가 배차 대수 : {bus_num}"
 
 
 def max_passenger(재차인원_df, per_bus_num, month_operation_day: int = 30):
