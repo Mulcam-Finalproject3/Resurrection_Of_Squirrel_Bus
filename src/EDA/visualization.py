@@ -402,3 +402,13 @@ def visualize_similar_gmm_map(html_name, similar_data):
 
     # Folium 지도 출력
     map_seoul.save(html_name)
+
+def get_normal_barplot(x, y, data,xlabel,ylabel,title):
+    plt.rcParams['font.family'] = 'Malgun Gothic' # 한글깨짐 방지
+    plt.rcParams['font.size'] = 12
+    plt.figure(figsize=(8,5))
+    sns.barplot(x=x, y=y, data =data).set(title='-')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.show();
